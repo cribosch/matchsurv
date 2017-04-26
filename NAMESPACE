@@ -1,0 +1,3 @@
+useDynLib(matchsurv)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")
