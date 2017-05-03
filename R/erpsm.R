@@ -1,5 +1,5 @@
 ### {{{ compdata
-
+browser()
 compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
     if (Truncation){
         
