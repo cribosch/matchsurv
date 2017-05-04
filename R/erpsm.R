@@ -1,5 +1,6 @@
 ### {{{ compdata
 compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
+    browser()
     if (Truncation){
         
         ii <- mets::cluster.index(idCase)
@@ -12,7 +13,7 @@ compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
         matstatus <- t(matrix(status[jj$idclustmat+1], ncol=jj$maxclust))
 	if (ncol(X)>0) {
             if(!is.null(colnames(X))) {namesX<-colnames(X)
-} else namesX <- paste("var", seq(1,ncol(X)),sep="")
+            } else namesX <- paste("var", seq(1,ncol(X)),sep="")
         }
         
         pd2<-NULL
@@ -34,21 +35,35 @@ compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
         pd2$w<-rowSums(pd2[,seq(3,k*3,3)]==1,na.rm=TRUE)
         pd2$id<-1:jj$maxclust
         if (is.vector(X)) X<-matrix(X, ncol=1)
+
         if (!is.null(strata)) {
-            pd2<-data.frame(pd2,X[!duplicated(idCase),], strata[!duplicated(idCase)])
+            pd2<-data.frame(pd2,strata[!duplicated(idCase)])
         } else {
-            pd2<-data.frame(pd2,X[!duplicated(idCase),])
+            pd2<-data.frame(pd2)
         }
 
-        
+        if (ncol(X)>0) {
+            Xcase <- X[!duplicated(idCase),]
+            pd2 <- data.frame(pd2,Xcase)
+        }
+    
         d2<-data.table::data.table(pd2)
+        
         if (!is.null(strata)) {
-            colnames(d2)<-c(paste0(c("entry","exit","indicator"),
+            colnamesd2<-c(paste0(c("entry","exit","indicator"),
                                    rep(seq_len(k),each=3)),
-                            "w","id", namesX, "strata")
-        } else  colnames(d2)<-c(paste0(c("entry","exit","indicator"),
+                            "w","id", "strata")
+        } else {
+            colnamesd2<-c(paste0(c("entry","exit","indicator"),
                                    rep(seq_len(k),each=3)),
-                            "w","id", namesX)
+                            "w","id")
+        }
+
+        if (ncol(X)>0) {
+            colnamesd2<-c(colnamesd2, namesX)
+        }
+
+        colnames(d2) <- colnamesd2
         
         d3<-data.table::melt(d2,measure=patterns("^entry","^exit","^indicator"),
                              value.name=c("entry","exit","indicator"),
@@ -94,20 +109,34 @@ compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
         pd2$w<-rowSums(pd2[,seq(2,k*2,2)]==1,na.rm=TRUE)
         pd2$id<-1:jj$maxclust
         if (is.vector(X)) X<-matrix(X, ncol=1)
-        if (!is.null(strata)){
-            pd2<-data.frame(pd2,X[!duplicated(idCase),], strata[!duplicated(idCase)])
+
+        if (!is.null(strata)) {
+            pd2<-data.frame(pd2, strata[!duplicated(idCase)])
         } else {
-            pd2<-data.frame(pd2,X[!duplicated(idCase),])
+            pd2<-data.frame(pd2)
+        }
+        
+        if (ncol(X)>0) {
+            Xcase <- X[!duplicated(idCase),]
+            pd2 <- data.frame(pd2, Xcase)
         }
         
         d2<-data.table::data.table(pd2)
+        
         if (!is.null(strata)) {
-            colnames(d2)<-c(paste0(c("exit","indicator"),
+            colnamesd2<-c(paste0(c("exit","indicator"),
                                rep(seq_len(k), each=2)),
-                            "w","id", namesX, "strata")
-            } else colnames(d2)<-c(paste0(c("exit","indicator"),
+                            "w","id", "strata")
+        } else {
+            colnamesd2<-c(paste0(c("exit","indicator"),
                                rep(seq_len(k), each=2)),
-                               "w","id", namesX)
+                            "w","id")
+        }
+        
+        if (ncol(X)>0) {
+            colnamesd2<-c(colnamesd2, namesX)
+        }
+        colnames(d2) <- colnamesd2
         
         d3<-data.table::melt(d2,measure=patterns("^exit","^indicator"),
                              value.name=c("exit","indicator"),
@@ -157,7 +186,7 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
                      .Call("PL",pp,X,XX,Sign,jumps,weight, package="erpsEst")))
             gradient <- Reduce("+", lapply(val, function(x) x$gradient))
             hessian <- Reduce("+", lapply(val, function(x) x$hessian))
-S0 <- lapply(val, function(x) x$S0)
+            S0 <- lapply(val, function(x) x$S0)
             nevent<-unlist(lapply(S0,length))
             if (all){
                 U <- do.call("rbind", lapply(val, function(x) x$U))
@@ -166,12 +195,12 @@ S0 <- lapply(val, function(x) x$S0)
                 jumps<-lapply(dd, function(x)  x$jumps+1)
                 jumptimes<-lapply(dd, function(x) x$time[x$ord+1][x$jumps+1])
                 weight<-lapply(val, function(x)  x$weight)
-#S0 <- lapply(val, function(x) x$S0)
+                #S0 <- lapply(val, function(x) x$S0)
                 #nevent<-unlist(lapply(S0,length))
                 return(list(gradient=gradient, hessian=hessian,
                             U=U, S0=S0, nevent=nevent,
                             ord=ord, time=time, jumps=jumps, 
-jumptimes=jumptimes, weight=weight))
+                            jumptimes=jumptimes, weight=weight))
             }
             structure(nevent,gradient=-gradient, hessian=-hessian)
             }
@@ -186,12 +215,12 @@ jumptimes=jumptimes, weight=weight))
                 val <- with(dd,
                             .Call("PL",pp,X,XX,Sign,jumps,weight, package="erpsEst"))
                  val$nevent<-length(val$S0)
-if (all){
+                if (all){
                     val$time<-dd$time[dd$ord+1]
                     val$ord<-dd$ord+1
                     val$jumps<-dd$jumps+1
                     val$jumpstime<-val$time[val$jumps]
-                    val$nevent<-length(val$S0)
+                    #val$nevent<-length(val$S0)
                     return(val)
                 }
                 with(val, structure(nevent,gradient=-gradient, hessian=-hessian))
@@ -278,8 +307,11 @@ erpsd <- function(formula,data,idCase,idControl,...){
         entry <- setupdata$entry
     } else entry <- rep(0,nrow(Y))
 
-    X <- as.matrix(setupdata[,namesX], ncol=p)
-    colnames(X)<-namesX	
+    if (p>0) {
+        X <- as.matrix(setupdata[,namesX], ncol=p)
+        colnames(X)<-namesX
+    }
+    
     status <- setupdata$status
     weight <- setupdata$w
     strata <- setupdata$strata
