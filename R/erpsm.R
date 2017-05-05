@@ -389,7 +389,7 @@ print.summary.erpsd <- function(x,...){
     nn <- cbind(x$n,x$nevent)
     rownames(nn) <- levels(x$strata); colnames(nn) <-c("n","events")
 	if (is.null(rownames(nn))) rownames(nn)<-rep("",NROW(nn))
-	if length(x$strata)> max.strata) {
+	if (length(x$strata)> max.strata) {
 		nn <-rbind(c(colSums(nn),length(x$strata)));
 		colnames(nn)<-c("n","events","stratas")
 		rownames(nn)<-""
