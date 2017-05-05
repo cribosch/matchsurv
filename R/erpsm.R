@@ -359,6 +359,7 @@ sandEst<- function(x,...){
 
 ##' @export
 summary.erpsd <- function(object,...){
+	browser()
 	cc <- NULL
     if (length(object$p)>0) {
         V <- vcov(object)
