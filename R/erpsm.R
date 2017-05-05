@@ -482,4 +482,4 @@ vcovCH.erpsd <- function(object, time=object$exit){
                             object$xjumps,object$E,object$hessian,sigmaH, time)
     return(vcovchaz)
 }
-####}}} vcovCH
+###}}} vcovCH
