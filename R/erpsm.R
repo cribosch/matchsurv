@@ -359,18 +359,22 @@ sandEst<- function(x,...){
 
 ##' @export
 summary.erpsd <- function(object,...){
+	cc <- NULL
     if (length(object$p)>0) {
-        cc <- NULL
         V <- vcov(object)
         cc <- cbind(coef(object),diag(V)^0.5)
         cc <- cbind(cc,2*(pnorm(abs(cc[,1]/cc[,2]), lower.tail=FALSE)))
         colnames(cc) <- c("Estimate","S.E.","P-value")
         rownames(cc) <- names(coef(object))
     }
-if (!is.list(object$time)) {
-n <- length(object$time)
-} else n<-lapply(object$time, length)
-    res <- list(coef=cc,n=n,nevent=object$nevent)
+	Strata<-levels(object$strata)
+	if (!is.null(Strata)) {
+		n<-unlist(lapply(object$time, length))
+		} else {
+		n<-length(object$time)
+		}
+    res <- list(coef=cc,n=n,nevent=object$nevent,
+	       strata=Strata)
     class(res) <- "summary.erpsd"
     res
 }
