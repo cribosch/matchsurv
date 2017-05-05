@@ -387,13 +387,18 @@ summary.erpsd <- function(object,...){
 print.summary.erpsd <- function(x,...){
     cat("\n")
     nn <- cbind(x$n,x$nevent)
-    rownames(nn) <- rep("",NROW(nn))
-    print(nn,quote=FALSE)
+    rownames(nn) <- levels(x$strata); colnames(nn) <-c("n","events")
+	if (is.null(rownames(nn))) rownames(nn)<-rep("",NROW(nn))
+	if length(x$strata)> max.strata) {
+		nn <-rbind(c(colSums(nn),length(x$strata)));
+		colnames(nn)<-c("n","events","stratas")
+		rownames(nn)<-""
+		}
+	print(nn,quote=FALSE)
     if (!is.null(x$coef)) {
         cat("\n")
         printCoefmat(x$coef,...)
     }
-    cat("\n")
 }
 
 ###}}} print.summary
@@ -413,6 +418,29 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 
 ##' @export
 predict.erpsd <- function(object, data, time=object$exit,...){
+	if(!is.null(object$strata)) {
+		lev <-levels(object$strata)
+		if (!is.null(object$strata) && 
+		    !(is.list(time) & !is.data.frame(time)) && 
+		    !(is.list(X) & !is.data.frame(X)))) {
+			X0<-X
+			time0<-time
+			X<-time<-c()
+			for (i in seq(length(lev))) {
+				idx <- which(strata==lev[i])
+				X<-c(X, list(X0[idx,,drop=FALSE]))
+				time <-c(time, list(time0[idx]))
+				}
+			}
+		chaz<-c()
+		for (i in seq(length(lev)))
+			chaz<-c(chaz, list(predictErpsd(object$jumptime[[i]],
+							object$S0[[i]],
+							object$weight[[i]],
+							coef(object),
+							time[[i]])))
+		names(chaz)<-lev
+		} else {
     chaz <- predictErpsd(object$jumpstime, object$S0, object$weight, coef(object),time)
     return(chaz)
 }
