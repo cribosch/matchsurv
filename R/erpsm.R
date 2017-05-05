@@ -421,7 +421,7 @@ predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,..
 	browser()
 	if (!is.null(strata) && !all.equal(time, object$exit)) {
 		time0<-time
-		time<-rep(list(time0), nlevel(strata)
+		time<-rep(list(time0), nlevel(strata))
 			  }
 	if(!is.null(object$strata)) {
 		lev <-levels(object$strata)
