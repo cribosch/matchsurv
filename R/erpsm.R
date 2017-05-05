@@ -361,7 +361,7 @@ sandEst<- function(x,...){
 summary.erpsd <- function(object,...){
 	browser()
 	cc <- NULL
-    if (length(object$p)>0) {
+    if (object$p>0) {
         V <- vcov(object)
         cc <- cbind(coef(object),diag(V)^0.5)
         cc <- cbind(cc,2*(pnorm(abs(cc[,1]/cc[,2]), lower.tail=FALSE)))
