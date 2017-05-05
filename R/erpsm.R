@@ -359,7 +359,6 @@ sandEst<- function(x,...){
 
 ##' @export
 summary.erpsd <- function(object,...){
-	browser()
 	cc <- NULL
     if (object$p>0) {
         V <- vcov(object)
@@ -386,7 +385,6 @@ summary.erpsd <- function(object,...){
 
 ##' @export
 print.summary.erpsd <- function(x,max.strata=5,...){
-	browser()
     cat("\n")
     nn <- cbind(x$n,x$nevent)
     rownames(nn) <- levels(x$strata); colnames(nn) <-c("n","events")
