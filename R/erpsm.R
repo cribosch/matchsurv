@@ -385,6 +385,7 @@ summary.erpsd <- function(object,...){
 
 ##' @export
 print.summary.erpsd <- function(x,...){
+	browser()
     cat("\n")
     nn <- cbind(x$n,x$nevent)
     rownames(nn) <- levels(x$strata); colnames(nn) <-c("n","events")
@@ -418,7 +419,6 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 
 ##' @export
 predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,...){
-	browser()
 	if (!is.null(strata) && 
 	    !any(time %in% object$exit)) {
 		lev <-levels(object$strata)
