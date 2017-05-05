@@ -419,7 +419,8 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 ##' @export
 predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,...){
 	browser()
-	if (!is.null(strata) && time!=object$exit) {
+	if (!is.null(strata) && 
+	    any(time %in% object$exit)) {
 		time0<-time
 		time<-rep(list(time0), nlevel(strata))
 			  }
