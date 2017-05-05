@@ -442,6 +442,7 @@ predict.erpsd <- function(object, data, time=object$exit,...){
 		names(chaz)<-lev
 		} else {
     chaz <- predictErpsd(object$jumpstime, object$S0, object$weight, coef(object),time)
+		}
     return(chaz)
 }
 ###}}} predict
