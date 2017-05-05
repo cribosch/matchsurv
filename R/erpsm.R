@@ -418,6 +418,7 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 
 ##' @export
 predict.erpsd <- function(object, data, time=object$exit,...){
+	browser()
 	if(!is.null(object$strata)) {
 		lev <-levels(object$strata)
 		if (!is.null(object$strata) && 
