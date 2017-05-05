@@ -385,7 +385,7 @@ summary.erpsd <- function(object,...){
 ###{{{ print.summary
 
 ##' @export
-print.summary.erpsd <- function(x,...){
+print.summary.erpsd <- function(x,max.strata=5,...){
 	browser()
     cat("\n")
     nn <- cbind(x$n,x$nevent)
