@@ -422,7 +422,7 @@ predict.erpsd <- function(object, data, time=object$exit,...){
 		lev <-levels(object$strata)
 		if (!is.null(object$strata) && 
 		    !(is.list(time) & !is.data.frame(time)) && 
-		    !(is.list(X) & !is.data.frame(X)))) {
+		    !(is.list(X) & !is.data.frame(X))) {
 			X0<-X
 			time0<-time
 			X<-time<-c()
