@@ -422,13 +422,13 @@ predict.erpsd <- function(object, data, time=object$exit,...){
 		lev <-levels(object$strata)
 		if (!is.null(object$strata) && 
 		    !(is.list(time) & !is.data.frame(time)) && 
-		    !(is.list(X) & !is.data.frame(X))) {
-			X0<-X
+		    !(is.list(weight) & !is.data.frame(weight))) {
+			weight0<-weight
 			time0<-time
-			X<-time<-c()
+			weight<-time<-c()
 			for (i in seq(length(lev))) {
 				idx <- which(strata==lev[i])
-				X<-c(X, list(X0[idx,,drop=FALSE]))
+				weight<-c(weight, list(weight0[idx,,drop=FALSE]))
 				time <-c(time, list(time0[idx]))
 				}
 			}
