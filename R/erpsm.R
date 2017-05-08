@@ -208,11 +208,11 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
             dd <- .Call("prep",
                         entry,exit, status,weight,X,
                         sum(entry)!=0,
-                        package="erpsEst")
+                        package="matchsurv")
     
             obj <- function(pp, U=FALSE, all=FALSE) {
                 val <- with(dd,
-                            .Call("PL",pp,X,XX,Sign,jumps,weight, package="erpsEst"))
+                            .Call("PL",pp,X,XX,Sign,jumps,weight, package="matchsurv"))
                  val$nevent<-length(val$S0)
                 if (all){
                     val$time<-dd$time[dd$ord+1]
