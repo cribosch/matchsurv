@@ -176,13 +176,13 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
             .Call("prep",
                   entry[ii], exit[ii], status[ii], weight[ii],
                   as.matrix(X)[ii,,drop=FALSE],sum(entry[ii])!=0,
-                  package="erpsEst"))
+                  package="matchsurv"))
 
         
         obj <- function(pp, U=FALSE, all=FALSE) {
             val <- lapply(dd, function (d)
                 with(d,
-                     .Call("PL",pp,X,XX,Sign,jumps,weight, package="erpsEst")))
+                     .Call("PL",pp,X,XX,Sign,jumps,weight, package="matchsurv")))
             gradient <- Reduce("+", lapply(val, function(x) x$gradient))
             hessian <- Reduce("+", lapply(val, function(x) x$hessian))
             S0 <- lapply(val, function(x) x$S0)
