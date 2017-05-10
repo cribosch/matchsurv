@@ -1,8 +1,8 @@
 ### {{{ compdata
-compdata<-function(entry,exit,status,idCase,idControl,X,strata,Truncation){
+compdata<-function(entry,exit,status,cluster,case,X,strata,Truncation){
     if (Truncation){
-        
-        ii <- mets::cluster.index(idCase)
+       
+        ii <- mets::cluster.index(cluster)
         jj <- mets::cluster.index(idControl)
         
         k <- ii$maxclust-1
@@ -259,13 +259,14 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
 ##' @param idControl vector control indicator (the number of controls is expected to be the same for every case)
 ##' @author Cristina Boschini
 ##' @export
-erpsd <- function(formula,data,idCase,idControl,...){
-    idCase <- eval(substitute(idCase),data)
-    idControl <- eval(substitute(idControl),data)
-    if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
+erpsd <- function(formula,data,...){
+	browser()
+  #  idCase <- eval(substitute(idCase),data)
+  #  idControl <- eval(substitute(idControl),data)
+  #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
     cl <- match.call()
-    m <- match.call(expand.dots=TRUE)[1:3]
-    special <- c("strata")
+    m <- match.call(expand.dots=TRUE)[1:4]
+    special <- c("strata","cluster","case")
     Terms <- terms(formula,special,data=data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
@@ -289,6 +290,18 @@ erpsd <- function(formula,data,idCase,idControl,...){
         Terms <- Terms[-ts$terms]
         strata <- m[[ts$vars]]
     }
+    cluster <- NULL
+    if (!is.null(attributes(Terms)$specials$cluster)){
+        ts <- survival::untangle.specials(Terms, "cluster")
+        Terms <- Terms[-ts$terms]
+        cluster <- m[[ts$vars]]
+    }
+    case <- NULL
+    if (!is.null(stratapos <- attributes(Terms)$specials$case)){
+        ts <- survival::untangle.specials(Terms, "case")
+        Terms <- Terms[-ts$terms]
+        case <- m[[ts$vars]]
+    }
     X <- model.matrix(Terms, m)
     if (!is.null(intpos <- attributes(Terms)$intercept))
         X <- X[,-intpos,drop=FALSE]
@@ -298,8 +311,8 @@ erpsd <- function(formula,data,idCase,idControl,...){
     else namesX <- paste("var",seq(1,ncol(X)),sep="")
 
     if (Truncation) {
-        setupdata <- compdata(entry,exit,status,idCase,idControl,X,strata,Truncation)
-    } else setupdata <- compdata(entry=NULL,exit,status,idCase,idControl,X,strata,Truncation)
+        setupdata <- compdata(entry,exit,status,cluster,case,X,strata,Truncation)
+    } else setupdata <- compdata(entry=NULL,exit,status,cluster,case,X,strata,Truncation)
     
     exit <-setupdata$exit    
     if (Truncation) {
