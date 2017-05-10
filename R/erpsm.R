@@ -303,7 +303,8 @@ erpsd <- function(formula,data,idControl,...){
     if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
     p<-ncol(X)
     if(!is.null(colnames(X))) namesX<-colnames(X)
-    else namesX <- paste("var",seq(1,ncol(X)),sep="")
+    else if(p>0) namesX <- paste("var",seq(1,p),sep="")
+	    else namesX<-"var"
 
     if (Truncation) {
         setupdata <- compdata(entry,exit,status,cluster,idControl,X,strata,Truncation)
