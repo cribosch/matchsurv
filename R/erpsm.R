@@ -297,6 +297,7 @@ erpsd <- function(formula,data,idControl,...){
         cluster <- m[[ts$vars]]
     }
 	idControl<-model.extract(m,"idControl")
+	names(idControl)<- NULL
     X <- model.matrix(Terms, m)
     if (!is.null(intpos <- attributes(Terms)$intercept))
         X <- X[,-intpos,drop=FALSE]
