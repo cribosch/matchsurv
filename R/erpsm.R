@@ -1,5 +1,6 @@
 ### {{{ compdata
 compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
+	browser()
     if (Truncation){
        
         ii <- mets::cluster.index(cluster)
@@ -260,7 +261,6 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
 ##' @author Cristina Boschini
 ##' @export
 erpsd <- function(formula,data,idControl,...){
-	browser()
   #  idCase <- eval(substitute(idCase),data)
   #  idControl <- eval(substitute(idControl),data)
   #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
@@ -304,7 +304,6 @@ erpsd <- function(formula,data,idControl,...){
     p<-ncol(X)
     if(!is.null(colnames(X))) namesX<-colnames(X)
     else if(p>0) namesX <- paste("var",seq(1,p),sep="")
-	    else namesX<-"var"
 
     if (Truncation) {
         setupdata <- compdata(entry,exit,status,cluster,idControl,X,strata,Truncation)
