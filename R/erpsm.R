@@ -1,5 +1,5 @@
 ### {{{ compdata
-compdata<-function(entry,exit,status,cluster,case,X,strata,Truncation){
+compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
     if (Truncation){
        
         ii <- mets::cluster.index(cluster)
@@ -259,14 +259,14 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
 ##' @param idControl vector control indicator (the number of controls is expected to be the same for every case)
 ##' @author Cristina Boschini
 ##' @export
-erpsd <- function(formula,data,...){
+erpsd <- function(formula,data,idControl,...){
 	browser()
   #  idCase <- eval(substitute(idCase),data)
   #  idControl <- eval(substitute(idControl),data)
   #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
     cl <- match.call()
-    m <- match.call(expand.dots=TRUE)[1:4]
-    special <- c("strata","cluster","case")
+    m <- match.call(expand.dots=TRUE)[1:5]
+    special <- c("strata","cluster")
     Terms <- terms(formula,special,data=data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
@@ -296,12 +296,6 @@ erpsd <- function(formula,data,...){
         Terms <- Terms[-ts$terms]
         cluster <- m[[ts$vars]]
     }
-    case <- NULL
-    if (!is.null(stratapos <- attributes(Terms)$specials$case)){
-        ts <- survival::untangle.specials(Terms, "case")
-        Terms <- Terms[-ts$terms]
-        case <- m[[ts$vars]]
-    }
     X <- model.matrix(Terms, m)
     if (!is.null(intpos <- attributes(Terms)$intercept))
         X <- X[,-intpos,drop=FALSE]
@@ -311,8 +305,8 @@ erpsd <- function(formula,data,...){
     else namesX <- paste("var",seq(1,ncol(X)),sep="")
 
     if (Truncation) {
-        setupdata <- compdata(entry,exit,status,cluster,case,X,strata,Truncation)
-    } else setupdata <- compdata(entry=NULL,exit,status,cluster,case,X,strata,Truncation)
+        setupdata <- compdata(entry,exit,status,cluster,idControl,X,strata,Truncation)
+    } else setupdata <- compdata(entry=NULL,exit,status,cluster,idControl,X,strata,Truncation)
     
     exit <-setupdata$exit    
     if (Truncation) {
