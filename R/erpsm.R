@@ -36,13 +36,13 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         if (is.vector(X)) X<-matrix(X, ncol=1)
 
         if (!is.null(strata)) {
-            pd2<-data.frame(pd2,strata[!duplicated(idCase)])
+            pd2<-data.frame(pd2,strata[!duplicated(cluster)])
         } else {
             pd2<-data.frame(pd2)
         }
 
         if (ncol(X)>0) {
-            Xcase <- X[!duplicated(idCase),]
+            Xcase <- X[!duplicated(cluster),]
             pd2 <- data.frame(pd2,Xcase)
         }
     
@@ -78,7 +78,7 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         d3<-d3[d3$exit>d3$entry,]
     } else {
         
-        ii <- mets::cluster.index(idCase)
+        ii <- mets::cluster.index(cluster)
         jj <- mets::cluster.index(idControl)
         
         k <- ii$maxclust-1
@@ -110,13 +110,13 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         if (is.vector(X)) X<-matrix(X, ncol=1)
 
         if (!is.null(strata)) {
-            pd2<-data.frame(pd2, strata[!duplicated(idCase)])
+            pd2<-data.frame(pd2, strata[!duplicated(cluster)])
         } else {
             pd2<-data.frame(pd2)
         }
         
         if (ncol(X)>0) {
-            Xcase <- X[!duplicated(idCase),]
+            Xcase <- X[!duplicated(cluster),]
             pd2 <- data.frame(pd2, Xcase)
         }
         
@@ -255,7 +255,6 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
 ##' Excess risk paired survival model
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
-##' @param idCase vector case indicator
 ##' @param idControl vector control indicator (the number of controls is expected to be the same for every case)
 ##' @author Cristina Boschini
 ##' @export
