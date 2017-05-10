@@ -1,6 +1,5 @@
 ### {{{ compdata
 compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
-	browser()
     if (Truncation){
        
         ii <- mets::cluster.index(cluster)
