@@ -265,9 +265,9 @@ erpsd <- function(formula,data,idControl,...){
   #  idControl <- eval(substitute(idControl),data)
   #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
     cl <- match.call()
-    m <- match.call(expand.dots=TRUE)[1:5]
+    m <- match.call(expand.dots=TRUE)[1:4]
     special <- c("strata","cluster")
-    Terms <- terms(formula,special,data=data)
+    Terms <- terms(formula,special,data=data, idControl=idControl)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
     m <- eval(m, parent.frame())
