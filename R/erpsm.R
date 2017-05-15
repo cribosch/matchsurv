@@ -1,159 +1,85 @@
 ### {{{ compdata
 compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
-    if (Truncation){
-       
-        ii <- mets::cluster.index(cluster)
-        jj <- mets::cluster.index(idControl)
-        
-        k <- ii$maxclust-1
-        
-        matentry <- t(matrix(entry[jj$idclustmat+1], ncol=jj$maxclust))
-        matexit <- t(matrix(exit[jj$idclustmat+1], ncol=jj$maxclust))
-        matstatus <- t(matrix(status[jj$idclustmat+1], ncol=jj$maxclust))
-	if (ncol(X)>0) {
-            if(!is.null(colnames(X))) {namesX<-colnames(X)
-            } else namesX <- paste("var", seq(1,ncol(X)),sep="")
-        }
-        
-        pd2<-NULL
-        for (j in 1:k){
-            EntryMax <- pmax(matentry[,1],matentry[,j+1], na.rm=TRUE)
-            EntryMax <- ifelse(is.na(matentry[,j+1]),NA, EntryMax)
-            ExitMin <- pmin(matexit[,1],matexit[,j+1], na.rm=TRUE)
-            ExitMin <- ifelse(is.na(matexit[,j+1]),NA, ExitMin)
-            
-            Smin<-ifelse(is.na(ExitMin),NA,
-                  ifelse(ExitMin<EntryMax,NA,
-                  ifelse(ExitMin==matexit[,1] & EntryMax<matexit[,1],
-                         matstatus[,1],
-                  ifelse(matstatus[,j+1]==1 & EntryMax<=ExitMin,-1,0))))
-            
-            pd2<-cbind(pd2,cbind(EntryMax, ExitMin,Smin))
-        }
-        pd2<-data.frame(pd2)    
-        pd2$w<-rowSums(pd2[,seq(3,k*3,3)]==1,na.rm=TRUE)
-        pd2$id<-1:jj$maxclust
-        if (is.vector(X)) X<-matrix(X, ncol=1)
+  if (Truncation){
 
-        if (!is.null(strata)) {
-            pd2<-data.frame(pd2,strata[!duplicated(cluster)])
-        } else {
-            pd2<-data.frame(pd2)
-        }
+      wp <- mets::familyclusterWithProbands.index(cluster, idControl, Rindex==1)
 
-        if (ncol(X)>0) {
-            Xcase <- X[!duplicated(cluster),]
-            pd2 <- data.frame(pd2,Xcase)
-        }
-    
-        d2<-data.table::data.table(pd2)
-        
-        if (!is.null(strata)) {
-            colnamesd2<-c(paste0(c("entry","exit","indicator"),
-                                   rep(seq_len(k),each=3)),
-                            "w","id", "strata")
-        } else {
-            colnamesd2<-c(paste0(c("entry","exit","indicator"),
-                                   rep(seq_len(k),each=3)),
-                            "w","id")
-        }
+      start<- apply(cbind(entry[wp$pairs[,1]],entry[wp$pairs[,2]]),1,max)
+      end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
+      indicator <- ifelse(end==exit[wp$pairs[,2]],
+                          status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
+      group <- cluster[wp$pairs[,1]]
+      subj <- idControl[wp$pairs[,1]]-1
+      size.group <- mets::cluster.index(group)$cluster.size
 
-        if (ncol(X)>0) {
-            colnamesd2<-c(colnamesd2, namesX)
-        }
+      if (!is.null(strata)) strata <- strata[wp$pairs[,2]]
 
-        colnames(d2) <- colnamesd2
-        
-        d3<-data.table::melt(d2,measure=patterns("^entry","^exit","^indicator"),
-                             value.name=c("entry","exit","indicator"),
-                             variable.factor=FALSE, variable.name="j")
-        class(d3)<-"data.frame"
-        d3$status<-1
-        d3$w<-ifelse(d3$indicator==0,1,d3$w)
-        d3$status<-ifelse(d3$indicator==0,0,d3$status)
-        d3$w<-ifelse(d3$indicator==-1,-1,d3$w)
-        d3$dummy<-paste0(d3$id,".",d3$w)
-        d3$w <-ifelse(d3$w>1 & duplicated(d3$dummy),0,d3$w)
-        d3$status<-ifelse(d3$w==0,0,d3$status)
-        d3<-d3[d3$exit>d3$entry,]
+      if (ncol(X)>0) {
+          Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))   
+          if(!is.null(colnames(X))) {
+              namesX<-colnames(X)
+          } else namesX <- paste("var", seq(1,ncol(X)),sep="")
+          colnames(Xcases) <- namesX
+      }
+      
+      funw <- function(x) sum(x==1)
+      
+      weight <- rep(tapply(indicator,group,funw), size.group)
+      weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
+      
+      fund <- function(x) (!(duplicated(x>1) & x>1))*x
+      
+      weight <- unlist(tapply(weight,group,fund))
+      stat <- ifelse(indicator==-1,1,ifelse(weight==1,0,ifelse(weight==0,0,1)))
+
+      d3 <- data.frame(start,end,indicator,stat,group,subj,weight)
+
+      if (ncol(X)>0) {
+          d3 <- data.frame(d3,Xcases)
+          if (!is.null(strata)) d3 <- data.frame(d3, strata)
+      } else  if(!is.null(strata)) d3 <-  data.frame(d3,strata)
+      
+
     } else {
         
-        ii <- mets::cluster.index(cluster)
-        jj <- mets::cluster.index(idControl)
+        wp <- mets::familyclusterWithProbands.index(cluster,idControl,Rindex=1)
         
-        k <- ii$maxclust-1
+        end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
+        indicator <- ifelse(end==exit[wp$pairs[,2]],
+                            status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
+        group <- cluster[wp$pairs[,1]]
+        subj <- idControl[wp$pairs[,1]]-1
+        size.group <- mets::cluster.index(group)$cluster.size
         
-        matexit <- t(matrix(exit[jj$idclustmat+1], ncol=jj$maxclust))
-        matstatus <- t(matrix(status[jj$idclustmat+1], ncol=jj$maxclust))
+        if (!is.null(strata)) strata <- strata[wp$pairs[,2]]
         
         if (ncol(X)>0) {
-            if(!is.null(colnames(X))) {namesX<-colnames(X)
+            Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))  
+            if(!is.null(colnames(X))) {
+                namesX<-colnames(X)
             } else namesX <- paste("var", seq(1,ncol(X)),sep="")
+            colnames(Xcases) <- namesX
         }
-        
-
-        pd2<-NULL
-        for (j in 1:k){
-            ExitMin <- pmin(matexit[,1],matexit[,j+1], na.rm=TRUE)
-            ExitMin <- ifelse(is.na(matexit[,j+1]),NA, ExitMin)
             
-            Smin<-ifelse(is.na(ExitMin),NA,
-                  ifelse(ExitMin==matexit[,1], matstatus[,1],
-                  ifelse(matstatus[,j+1]==1,-1,0)))
+    
+        funw <- function(x) sum(x==1)
             
-            pd2<-cbind(pd2,cbind(ExitMin,Smin))
-        }
+        weight <- rep(tapply(indicator,group,funw), size.group)
+        weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
+            
+        fund <- function(x) (!(duplicated(x>1) & x>1))*x
+            
+        weight <- unlist(tapply(weight,group,fund))
+        stat <- ifelse(indicator==-1,1,ifelse(weight==1,0,ifelse(weight==0,0,1)))
         
-        pd2<-data.frame(pd2)    
-        pd2$w<-rowSums(pd2[,seq(2,k*2,2)]==1,na.rm=TRUE)
-        pd2$id<-1:jj$maxclust
-        if (is.vector(X)) X<-matrix(X, ncol=1)
-
-        if (!is.null(strata)) {
-            pd2<-data.frame(pd2, strata[!duplicated(cluster)])
-        } else {
-            pd2<-data.frame(pd2)
-        }
+        d3 <- data.frame(end,indicator,stat,group,subj,weight)
         
         if (ncol(X)>0) {
-            Xcase <- X[!duplicated(cluster),]
-            pd2 <- data.frame(pd2, Xcase)
-        }
-        
-        d2<-data.table::data.table(pd2)
-        
-        if (!is.null(strata)) {
-            colnamesd2<-c(paste0(c("exit","indicator"),
-                               rep(seq_len(k), each=2)),
-                            "w","id", "strata")
-        } else {
-            colnamesd2<-c(paste0(c("exit","indicator"),
-                               rep(seq_len(k), each=2)),
-                            "w","id")
-        }
-        
-        if (ncol(X)>0) {
-            colnamesd2<-c(colnamesd2, namesX)
-        }
-        colnames(d2) <- colnamesd2
-        
-        d3<-data.table::melt(d2,measure=patterns("^exit","^indicator"),
-                             value.name=c("exit","indicator"),
-                             variable.factor=FALSE, variable.name="j")
-        
-        
-        class(d3)<-"data.frame"
-        d3$status<-1
-        d3$w<-ifelse(d3$indicator==0,1,d3$w)
-        d3$status<-ifelse(d3$indicator==0,0,d3$status)
-        d3$w<-ifelse(d3$indicator==-1,-1,d3$w)
-        d3$dummy<-paste0(d3$id,".",d3$w)
-        d3$w <-ifelse(d3$w>1 & duplicated(d3$dummy),0,d3$w)
-        d3$status<-ifelse(d3$w==0,0,d3$status)
-        
+            d3 <- data.frame(d3,Xcases)
+            if (!is.null(strata)) d3 <- data.frame(d3, strata)
+        } else  if(!is.null(strata)) d3 <-  data.frame(d3,strata)
     }
-    d3$dummy<-NULL
-    return(d3)
+  return(d3)
     
 }
 
@@ -308,9 +234,9 @@ erpsd <- function(formula,data,idControl,...){
         setupdata <- compdata(entry,exit,status,cluster,idControl,X,strata,Truncation)
     } else setupdata <- compdata(entry=NULL,exit,status,cluster,idControl,X,strata,Truncation)
     
-    exit <-setupdata$exit    
+    exit <-setupdata$end    
     if (Truncation) {
-        entry <- setupdata$entry
+        entry <- setupdata$start
     } else entry <- rep(0,nrow(Y))
 
     if (p>0) {
@@ -318,8 +244,8 @@ erpsd <- function(formula,data,idControl,...){
         colnames(X)<-namesX
     }
     
-    status <- setupdata$status
-    weight <- setupdata$w
+    status <- setupdata$stat
+    weight <- setupdata$weight
     strata <- setupdata$strata
     res <- c(erpsd0(X,entry, exit,status,weight,strata,...),list(call=cl, model.frame=m))
     class(res) <- "erpsd"
