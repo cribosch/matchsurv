@@ -12,16 +12,6 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
       subj <- idControl[wp$pairs[,1]]-1
       size.group <- mets::cluster.index(group)$cluster.size
 
-      if (!is.null(strata)) strata <- strata[wp$pairs[,2]]
-
-      if (ncol(X)>0) {
-          Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))   
-          if(!is.null(colnames(X))) {
-              namesX<-colnames(X)
-          } else namesX <- paste("var", seq(1,ncol(X)),sep="")
-          colnames(Xcases) <- namesX
-      }
-      
       funw <- function(x) sum(x==1)
       
       weight <- rep(tapply(indicator,group,funw), size.group)
@@ -35,15 +25,19 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
       d3 <- data.frame(start,end,indicator,stat,group,subj,weight)
 
       if (ncol(X)>0) {
-          d3 <- data.frame(d3,Xcases)
-          if (!is.null(strata)) d3 <- data.frame(d3, strata)
-      } else  if(!is.null(strata)) d3 <-  data.frame(d3,strata)
+        Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
+        d3 <- data.frame(d3,Xcases, check.names=FALSE)
+        
+        }
       
-
+      if (!is.null(strata)) {
+        strata <- strata[wp$pairs[,2]]
+        d3 <- data.frame(d3, strata, check.names = FALSE)
+      } 
+      d3<-d3[d3$start<=d3$end,]
     } else {
         
         wp <- mets::familyclusterWithProbands.index(cluster,idControl,Rindex=1)
-        
         end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
         indicator <- ifelse(end==exit[wp$pairs[,2]],
                             status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
@@ -51,17 +45,6 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         subj <- idControl[wp$pairs[,1]]-1
         size.group <- mets::cluster.index(group)$cluster.size
         
-        if (!is.null(strata)) strata <- strata[wp$pairs[,2]]
-        
-        if (ncol(X)>0) {
-            Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))  
-            if(!is.null(colnames(X))) {
-                namesX<-colnames(X)
-            } else namesX <- paste("var", seq(1,ncol(X)),sep="")
-            colnames(Xcases) <- namesX
-        }
-            
-    
         funw <- function(x) sum(x==1)
             
         weight <- rep(tapply(indicator,group,funw), size.group)
@@ -75,9 +58,14 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         d3 <- data.frame(end,indicator,stat,group,subj,weight)
         
         if (ncol(X)>0) {
-            d3 <- data.frame(d3,Xcases)
-            if (!is.null(strata)) d3 <- data.frame(d3, strata)
-        } else  if(!is.null(strata)) d3 <-  data.frame(d3,strata)
+          Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
+          d3 <- data.frame(d3,Xcases, check.names=FALSE)
+          }
+        
+        if (!is.null(strata)) {
+          strata <- strata[wp$pairs[,2]]
+          d3 <- data.frame(d3, strata, check.names = FALSE)
+        } 
     }
   return(d3)
     
