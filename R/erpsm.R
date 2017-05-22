@@ -26,8 +26,8 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
 
       if (ncol(X)>0) {
         Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
+        names(Xcases)<-names(X)
         d3 <- data.frame(d3,Xcases, check.names=FALSE)
-        
         }
       
       if (!is.null(strata)) {
@@ -59,6 +59,7 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         
         if (ncol(X)>0) {
           Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
+          names(Xcases)<-names(X)
           d3 <- data.frame(d3,Xcases, check.names=FALSE)
           }
         
