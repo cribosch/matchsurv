@@ -340,7 +340,7 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 ##' @export
 predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,...){
 	if (!is.null(strata) && 
-	    !any(time %in% object$exit)) {
+	    !all(time %in% object$exit)) {
 		lev <-levels(object$strata)
 		time0<-time
 		time<-rep(list(time0), length(lev))
