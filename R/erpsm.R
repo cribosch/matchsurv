@@ -373,10 +373,10 @@ predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,..
 
 ###{{{ vcovCH
 
-vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,time=NULL,...){
+vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,p,time=NULL,...){
     ## SE for Breslow estimator
     nevent <- length(jumptime)
-    p<-ncol(X)
+    if (p>0){
     l<-2*p
     matW <- diag(as.vector(weight), nrow=nevent)
     H <- apply((matW%*%E), 2, function(x) (x/S0)*(-1))
@@ -390,6 +390,12 @@ vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,time=NULL,
         x2<-x[(p+1):l]
         2*t(x1)%*%I%*%x2
     })
+    } else {
+    term1<-0
+    term2term3<-cumsum(weight^2/S0^2)
+    term4term5<-0
+    }
+    
     vcovchaz <- cbind(jumptime, term1+term2term3+term4term5)
 
     if (!is.null(time)){
@@ -401,10 +407,10 @@ vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,time=NULL,
 }
 
 ##' @export
-vcovCH.erpsd <- function(object, time=object$exit){
-    sigmaH <- vcov(object)
+vcovCH.erpsd <- function(object, time=object$exit, strata=object$strata){
+    if (object$p>0) sigmaH <- vcov(object)
     vcovchaz <- vcovCHErpsd(object$jumpstime, object$S0, object$weight, coef(object),
-                            object$xjumps,object$E,object$hessian,sigmaH, time)
+                            object$xjumps,object$E,object$hessian,sigmaH,object$p, time)
     return(vcovchaz)
 }
 ###}}} vcovCH
