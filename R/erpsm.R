@@ -26,7 +26,7 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
 
       if (ncol(X)>0) {
         Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
-        names(Xcases)<-names(X)
+        colnames(Xcases)<-colnames(X)
         d3 <- data.frame(d3,Xcases, check.names=FALSE)
         }
       
@@ -59,7 +59,7 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
         
         if (ncol(X)>0) {
           Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
-          names(Xcases)<-names(X)
+          colnames(Xcases)<-colnames(X)
           d3 <- data.frame(d3,Xcases, check.names=FALSE)
           }
         
@@ -109,12 +109,15 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
                 jumps<-lapply(dd, function(x)  x$jumps+1)
                 jumptimes<-lapply(dd, function(x) x$time[x$ord+1][x$jumps+1])
                 weight<-lapply(val, function(x)  x$weight)
+                E<-lapply(val, function(x) x$E)
+                xjumps<-lapply(val, function(x) x$xjumps)
                 #S0 <- lapply(val, function(x) x$S0)
                 #nevent<-unlist(lapply(S0,length))
                 return(list(gradient=gradient, hessian=hessian,
                             U=U, S0=S0, nevent=nevent,
                             ord=ord, time=time, jumps=jumps, 
-                            jumptimes=jumptimes, weight=weight))
+                            jumptimes=jumptimes, weight=weight,
+                            E=E, xjumps=xjumps))
             }
             structure(nevent,gradient=-gradient, hessian=-hessian)
             }
@@ -339,7 +342,9 @@ predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
 }
 
 ##' @export
-predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,...){
+predict.erpsd <- function(object, data,
+                          time=object$exit,
+                          strata=object$strata,...){
 	if (!is.null(strata) && 
 	    !all(time %in% object$exit)) {
 		lev <-levels(object$strata)
@@ -374,7 +379,9 @@ predict.erpsd <- function(object, data, time=object$exit,strata=object$strata,..
 
 ###{{{ vcovCH
 
-vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,p,time=NULL,...){
+vcovCHErpsd <- function(jumptime, S0, weight, beta,
+                        X,E,hessian,
+                        sigmaH,p,time=NULL,...){
     ## SE for Breslow estimator
     nevent <- length(jumptime)
     if (p>0){
@@ -408,10 +415,30 @@ vcovCHErpsd <- function(jumptime, S0, weight, beta,X,E,hessian,sigmaH,p,time=NUL
 }
 
 ##' @export
-vcovCH.erpsd <- function(object, time=object$exit, strata=object$strata){
+vcovCH.erpsd <- function(object, time=object$jumpstime, 
+                         strata=object$strata){
     if (object$p>0) sigmaH <- vcov(object)
-    vcovchaz <- vcovCHErpsd(object$jumpstime, object$S0, object$weight, coef(object),
-                            object$xjumps,object$E,object$hessian,sigmaH,object$p, time)
+    if (!is.null(object$strata)){
+      lev<-levels(object$strata)
+      vcovchaz<-c()
+      for (i in seq(length(lev)))
+      vcovchaz<-c(vcovchaz, list(vcovCHErpsd(object$jumptime[[i]],
+                                             object$S0[[i]],
+                                             object$weight[[i]],
+                                             coef(object),
+                                             object$xjumps[[i]],
+                                             object$E[[i]],
+                                             object$hessian,
+                                             sigmaH,
+                                             object$p,
+                                             time)))
+      names(vcovchaz)<-lev
+      } else {
+        vcovchaz <- vcovCHErpsd(object$jumpstime, object$S0, 
+                            object$weight, coef(object),
+                            object$xjumps,object$E,
+                            object$hessian,sigmaH,object$p,time)
+      }
     return(vcovchaz)
 }
 ###}}} vcovCH
