@@ -107,7 +107,7 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
                 time<-lapply(dd, function(x) x$time[x$ord+1])
                 ord<-lapply(dd, function(x) x$ord+1)
                 jumps<-lapply(dd, function(x)  x$jumps+1)
-                jumptimes<-lapply(dd, function(x) x$time[x$ord+1][x$jumps+1])
+                jumpstime<-lapply(dd, function(x) x$time[x$ord+1][x$jumps+1])
                 weight<-lapply(val, function(x)  x$weight)
                 E<-lapply(val, function(x) x$E)
                 xjumps<-lapply(val, function(x) x$xjumps)
@@ -116,7 +116,7 @@ erpsd0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,.
                 return(list(gradient=gradient, hessian=hessian,
                             U=U, S0=S0, nevent=nevent,
                             ord=ord, time=time, jumps=jumps, 
-                            jumptimes=jumptimes, weight=weight,
+                            jumpstime=jumpstime, weight=weight,
                             E=E, xjumps=xjumps))
             }
             structure(nevent,gradient=-gradient, hessian=-hessian)
@@ -330,9 +330,9 @@ print.summary.erpsd <- function(x,max.strata=5,...){
 
 ###{{{ predict
 
-predictErpsd <- function(jumptime, S0, weight, beta, time=NULL,...){
+predictErpsd <- function(jumpstime, S0, weight, beta, time=NULL,...){
     ## Brewslow estimator
-    chaz <- cbind(jumptime, cumsum(weight/S0))
+    chaz <- cbind(jumpstime, cumsum(weight/S0))
     if (!is.null(time)){
         chaz <- timereg::Cpred(chaz, time)
     }
@@ -364,7 +364,7 @@ predict.erpsd <- function(object, data,
 			} 
 		chaz<-c()
 		for (i in seq(length(lev)))
-			chaz<-c(chaz, list(predictErpsd(object$jumptime[[i]],
+			chaz<-c(chaz, list(predictErpsd(object$jumpstime[[i]],
 							object$S0[[i]],
 							object$weight[[i]],
 							coef(object),
@@ -379,11 +379,11 @@ predict.erpsd <- function(object, data,
 
 ###{{{ vcovCH
 
-vcovCHErpsd <- function(jumptime, S0, weight, beta,
+vcovCHErpsd <- function(jumpstime, S0, weight, beta,
                         X,E,hessian,
                         sigmaH,p,time=NULL,...){
     ## SE for Breslow estimator
-    nevent <- length(jumptime)
+    nevent <- length(jumpstime)
     if (p>0){
     l<-2*p
     matW <- diag(as.vector(weight), nrow=nevent)
@@ -404,7 +404,7 @@ vcovCHErpsd <- function(jumptime, S0, weight, beta,
     term4term5<-0
     }
     
-    vcovchaz <- cbind(jumptime, term1+term2term3+term4term5)
+    vcovchaz <- cbind(jumpstime, term1+term2term3+term4term5)
 
     if (!is.null(time)){
         vcovchaz <- timereg::Cpred(vcovchaz, time)
@@ -422,7 +422,7 @@ vcovCH.erpsd <- function(object, time=object$jumpstime,
       lev<-levels(object$strata)
       vcovchaz<-c()
       for (i in seq(length(lev)))
-      vcovchaz<-c(vcovchaz, list(vcovCHErpsd(object$jumptime[[i]],
+      vcovchaz<-c(vcovchaz, list(vcovCHErpsd(object$jumpstime[[i]],
                                              object$S0[[i]],
                                              object$weight[[i]],
                                              coef(object),
