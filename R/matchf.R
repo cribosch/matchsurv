@@ -330,52 +330,88 @@ print.summary.matchcox <- function(x,max.strata=5,...){
 
 ###{{{ predict
 
-predictmc<- function(jumpstime, S0, weight, beta, time=NULL,...){
-    ## Brewslow estimator
-    chaz <- cbind(jumpstime, cumsum(weight/S0))
-    if (!is.null(time)){
-        chaz <- timereg::Cpred(chaz, time)
+predictmc<- function(jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FALSE,...){
+  ## Brewslow estimator
+  chaz <- cbind(jumpstime, cumsum(weight/S0))
+  if (!is.null(time)){
+    chaz <- timereg::Cpred(chaz, time)
+  }
+  colnames(chaz)<-c("time","chaz")
+  if( !is.null(X)) {
+    H<-exp(X%*%beta)
+    if (nrow(chaz)==length(H)) {
+      chaz[,2] <- chaz[,2]*H
+    } else {
+      chaz2 <- c()
+      X <- rbind(X)
+      for (i in seq(nrow(X)))
+        chaz2 <- rbind(chaz2,
+                       cbind(chaz[,1],chaz[,2]*H[i],
+                             rep(1,nrow(chaz))%x%X[i,,drop=FALSE]))
+      chaz <- chaz2;
+      nn <- c("time","chaz",names(beta))
+      colnames(chaz) <- nn
     }
-    colnames(chaz)<-c("time","chaz")
-
-    return(chaz)
+  }
+  if (relsurv) {
+    chaz[,2]<-exp(-chaz[,2])
+    colnames(chaz)[2]<-"relsurv"
+  }
+  return(chaz)
 }
 
 ##' @export
 predict.matchcox <- function(object, data,
-                          time=object$exit,
-                          strata=object$strata,...){
-	if (!is.null(strata) && 
-	    !all(time %in% object$exit)) {
-		lev <-levels(object$strata)
-		time0<-time
-		time<-rep(list(time0), length(lev))
-			  }
-	if(!is.null(object$strata)) {
-		lev <-levels(object$strata)
-		if (!is.null(object$strata) && 
-		    !(is.list(time) & !is.data.frame(time))) {
-			time0<-time
-			time<-c()
-			for (i in seq(length(lev))) {
-				idx <- which(strata==lev[i])
-				time <-c(time, list(time0[idx]))
-				}
-			} 
-		chaz<-c()
-		for (i in seq(length(lev)))
-			chaz<-c(chaz, list(predictmc(object$jumpstime[[i]],
-							object$S0[[i]],
-							object$weight[[i]],
-							coef(object),
-							time[[i]])))
-		names(chaz)<-lev
-		} else {
+                             time=object$exit,
+                             X=object$X,
+                             strata=object$strata,
+                             relsurv=FALSE,...){
+  if (!is.null(strata) && 
+      !all(time %in% object$exit)) {
+    lev <-levels(object$strata)
+    time0<-time
+    time<-rep(list(time0), length(lev))
+  }
+  if(!is.null(object$strata)) {
+    lev <-levels(object$strata)
+    if (!is.null(object$strata) && 
+        !(is.list(time) & !is.data.frame(time))) {
+      time0<-time
+      time<-c()
+      for (i in seq(length(lev))) {
+        idx <- which(strata==lev[i])
+        time <-c(time, list(time0[idx]))
+      }
+    } 
+    chaz<-c()
+    for (i in seq(length(lev)))
+      chaz<-c(chaz, list(predictmc(object$jumpstime[[i]],
+                                   object$S0[[i]],
+                                   object$weight[[i]],
+                                   coef(object),
+                                   time[[i]])))
+    names(chaz)<-lev
+  } else {
     chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time)
-		}
-    return(chaz)
+  }
+  return(chaz)
 }
 ###}}} predict
+
+###{{{ plot
+
+##' @export
+plot.matchcox <-function(x, relsurv=FALSE, X=NULL, time=NULL, add=FALSE, conf.int=FALSE,...) {
+  require(ggplot2)
+  if (!is.null(X) && nrow(X)>1) {
+    P <- lapply(unique(split(X,seq(nrow(X)))),function(xx) predict(x,X=xx,time=time,relsurv=surv))
+  } else {
+    P <- predict(x,X=X,time=time,relsurv=relsurv)
+  }
+  
+  
+}
+###}}}
 
 ###{{{ vcovCH
 
