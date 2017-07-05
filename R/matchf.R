@@ -161,7 +161,7 @@ matchcox0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRU
                   exit=exit,
                   status=status,
                   p=p,
-                  X=as.data.frame(X),
+                  X=X,
                   weight=weight, opt=opt))
             
             class(res) <- "matchcox"
@@ -331,6 +331,7 @@ print.summary.matchcox <- function(x,max.strata=5,...){
 ###{{{ predict
 
 predictmc<- function(jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FALSE,...){
+  browser()
   ## Brewslow estimator
   chaz <- cbind(jumpstime, cumsum(weight/S0))
   if (!is.null(time)){
@@ -366,6 +367,7 @@ predict.matchcox <- function(object, data,
                              X=object$X,
                              strata=object$strata,
                              relsurv=FALSE,...){
+  browser()
   if (object$p==0) X<-NULL
   if (!is.null(object$strata) &&
       !all(time %in% object$exit) &&
