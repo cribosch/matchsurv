@@ -370,6 +370,7 @@ predict.matchcox <- function(object, data,
   if (!is.null(object$strata) &&
       !all(time %in% object$exit) &&
       !(is.list(X) & !is.data.frame(X))) {
+    lev <-levels(object$strata)
     time0<-time
     time<-rep(list(time0), length(lev))
     X0<-X
@@ -398,7 +399,8 @@ predict.matchcox <- function(object, data,
                                    X[[i]], relsurv)))
     names(chaz)<-lev
   } else {
-    chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time)
+    chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time,
+                      X, relsurv)
   }
   return(chaz)
 }
