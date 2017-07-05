@@ -161,7 +161,7 @@ matchcox0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRU
                   exit=exit,
                   status=status,
                   p=p,
-                  X=X,
+                  X=as.data.frame(X),
                   weight=weight, opt=opt))
             
             class(res) <- "matchcox"
@@ -366,30 +366,36 @@ predict.matchcox <- function(object, data,
                              X=object$X,
                              strata=object$strata,
                              relsurv=FALSE,...){
-  if (!is.null(strata) && 
-      !all(time %in% object$exit)) {
-    lev <-levels(object$strata)
+  if (object$p==0) X<-NULL
+  if (!is.null(object$strata) &&
+      !all(time %in% object$exit) &&
+      !(is.list(X) & !is.data.frame(X))) {
     time0<-time
     time<-rep(list(time0), length(lev))
+    X0<-X
+    X<-rep(list(X), length(X))
   }
   if(!is.null(object$strata)) {
     lev <-levels(object$strata)
-    if (!is.null(object$strata) && 
+    if (!is.null(object$strata) &&
         !(is.list(time) & !is.data.frame(time))) {
       time0<-time
-      time<-c()
+      X0<-X
+      X<-time<-c()
       for (i in seq(length(lev))) {
         idx <- which(strata==lev[i])
+        X <-c(X, list(X0[idx,,drop=FALSE]))
         time <-c(time, list(time0[idx]))
       }
-    } 
+    }
     chaz<-c()
     for (i in seq(length(lev)))
       chaz<-c(chaz, list(predictmc(object$jumpstime[[i]],
                                    object$S0[[i]],
                                    object$weight[[i]],
                                    coef(object),
-                                   time[[i]])))
+                                   time[[i]],
+                                   X[[i]], relsurv)))
     names(chaz)<-lev
   } else {
     chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time)
