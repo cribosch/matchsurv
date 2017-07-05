@@ -398,7 +398,8 @@ predict.matchcox <- function(object, data,
                                    X[[i]], relsurv)))
     names(chaz)<-lev
   } else {
-    chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time)
+    chaz <- predictmc(object$jumpstime, object$S0, object$weight, coef(object),time,
+                      X, relsurv)
   }
   return(chaz)
 }
