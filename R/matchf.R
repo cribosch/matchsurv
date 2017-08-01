@@ -75,9 +75,9 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
 ###}}} compdata
 
 
-###{{{ matchcox0
+###{{{ matchpropexc0
 
-matchcox0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,...){
+matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,...){
     if(is.vector(X)) X <- matrix(X, ncol=1)
     p <-ncol(X)
     if (missing(beta)) beta <-rep(0,p)
@@ -164,19 +164,19 @@ matchcox0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRU
                   X=X,
                   weight=weight, opt=opt))
             
-            class(res) <- "matchcox"
+            class(res) <- "matchpropexc"
             res
 }
-####}}} matchcox0
+####}}} matchpropexc0
 
-####{{{ matchcox
+####{{{ matchpropexc
 ##' Excess risk paired survival model
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
 ##' @param idControl vector control indicator (the number of controls is expected to be the same for every case)
 ##' @author Cristina Boschini
 ##' @export
-matchcox <- function(formula,data,idControl,...){
+matchpropexc <- function(formula,data,idControl,...){
   #  idCase <- eval(substitute(idCase),data)
   #  idControl <- eval(substitute(idControl),data)
   #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
@@ -239,17 +239,17 @@ matchcox <- function(formula,data,idControl,...){
     status <- setupdata$stat
     weight <- setupdata$weight
     strata <- setupdata$strata
-    res <- c(matchcox0(X,entry, exit,status,weight,strata,...),list(call=cl, model.frame=m))
-    class(res) <- "matchcox"
+    res <- c(matchpropexc0(X,entry, exit,status,weight,strata,...),list(call=cl, model.frame=m))
+    class(res) <- "matchpropexc"
     
     res
     
 }
-###}}} matchcox
+###}}} matchpropexc
 
 ###{{{ vcov
 ##' @export
-vcov.matchcox <- function(object,...){
+vcov.matchpropexc <- function(object,...){
     res <-  sandEst(object)
     attributes(res)$invhess <- attributes(sandEst)$invhess
     colnames(res) <- rownames(res) <- names(coef(object))
@@ -259,7 +259,7 @@ vcov.matchcox <- function(object,...){
 
 ###{{{ coef
 ##' @export
-coef.matchcox <- function(object,...) {
+coef.matchpropexc <- function(object,...) {
     object$coef
 }
 ###}}} coef
@@ -283,7 +283,7 @@ sandEst<- function(x,...){
 ###{{{ summary
 
 ##' @export
-summary.matchcox <- function(object,...){
+summary.matchpropexc <- function(object,...){
 	cc <- NULL
     if (object$p>0) {
         V <- vcov(object)
@@ -300,7 +300,7 @@ summary.matchcox <- function(object,...){
 		}
     res <- list(coef=cc,n=n,nevent=object$nevent,
 	       strata=Strata)
-    class(res) <- "summary.matchcox"
+    class(res) <- "summary.matchpropexc"
     res
 }
     
@@ -309,7 +309,7 @@ summary.matchcox <- function(object,...){
 ###{{{ print.summary
 
 ##' @export
-print.summary.matchcox <- function(x,max.strata=5,...){
+print.summary.matchpropexc <- function(x,max.strata=5,...){
     cat("\n")
     nn <- cbind(x$n,x$nevent)
     rownames(nn) <- levels(x$strata); colnames(nn) <-c("n","events")
@@ -361,7 +361,7 @@ predictmc<- function(jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FALSE
 }
 
 ##' @export
-predict.matchcox <- function(object, data,
+predict.matchpropexc <- function(object, data,
                              time=object$exit,
                              X=object$X,
                              strata=object$strata,
@@ -410,7 +410,7 @@ predict.matchcox <- function(object, data,
 ###{{{ plot
 
 ##' @export
-plot.matchcox <-function(x, relsurv=FALSE, X=NULL, time=NULL, add=FALSE, conf.int=FALSE,...) {
+plot.matchpropexc <-function(x, relsurv=FALSE, X=NULL, time=NULL, add=FALSE, conf.int=FALSE,...) {
   require(ggplot2)
   if (!is.null(X) && nrow(X)>1) {
     P <- lapply(unique(split(X,seq(nrow(X)))),function(xx) predict(x,X=xx,time=time,relsurv=surv))
@@ -460,7 +460,7 @@ vcovCHmc <- function(jumpstime, S0, weight, beta,
 }
 
 ##' @export
-vcovCH.matchcox <- function(object, time=object$jumpstime, 
+vcovCH.matchpropexc <- function(object, time=object$jumpstime, 
                          strata=object$strata){
     if (object$p>0) sigmaH <- vcov(object)
     if (!is.null(object$strata)){
