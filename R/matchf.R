@@ -381,7 +381,7 @@ cumhaz.matchf<-function(object, strata=object$strata){
     lev<-levels(strata)
     chaz<-c()
     se.chaz<-c()
-    for (i in seq(length(lev)))
+    for (i in seq(length(lev))){
       chaz<-c(chaz, list(cbind(object$jumpstime[[i]],
                               cumsum(object$weight[[i]]/object$S0[[i]]))))
       se.chaz<-c(se.chaz, list((vcovCH.mc(object$p,
@@ -392,7 +392,8 @@ cumhaz.matchf<-function(object, strata=object$strata){
                                          object$S0[[i]],
                                          object$hessian,
                                          sigmaH))^0.5))
-      names(chaz)<-names(se.chaz)<-lev
+    }
+    names(chaz)<-names(se.chaz)<-lev
   }
   return(list(chaz=chaz, se.chaz=se.chaz))
 }
