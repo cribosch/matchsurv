@@ -384,14 +384,14 @@ cumhaz.matchf<-function(object, strata=object$strata){
     for (i in seq(length(lev))){
       chaz<-c(chaz, list(cbind(object$jumpstime[[i]],
                               cumsum(object$weight[[i]]/object$S0[[i]]))))
-      se.chaz<-c(se.chaz, list((vcovCH.mc(object$p,
+      se.chaz<-c(se.chaz, list(cbind(object$jumpstime[[i]],(vcovCH.mc(object$p,
                                          object$weight[[i]],
                                          object$nevent[[i]],
                                          object$xjumps[[i]],
                                          object$E[[i]],
                                          object$S0[[i]],
                                          object$hessian,
-                                         sigmaH))^0.5))
+                                         sigmaH))^0.5)))
     }
     names(chaz)<-names(se.chaz)<-lev
   }
