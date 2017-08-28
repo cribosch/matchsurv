@@ -367,6 +367,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH=NULL, hessian){
 ### {{{ cumhaz.matchf
 ##' @export
 cumhaz.matchf<-function(object, strata=object$strata){
+  browser() 
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
   ### computes Breslow estimator and SE
