@@ -411,7 +411,7 @@ predictmc<- function(x,jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FAL
   se.chaz<-cumhaz.matchf(x)$se.chaz
 
     if(!is.null(time)){
-    chaz<-timereg::Cpred(chaz, time)
+    chaz<-timereg::Cpred(chaz, time) #problem with the strata. find the way to repeat the same code on all the strata. 
     se.chaz<-timereg::Cpred(se.chaz, time)
     }
   colnames(chaz)<-c("time","chaz")
