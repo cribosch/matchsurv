@@ -367,6 +367,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH=NULL, hessian){
 ### {{{ cumhaz.matchf
 ##' @export
 cumhaz.matchf<-function(object, strata=object$strata){
+  browser()
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
   ### computes Breslow estimator and SE
@@ -410,7 +411,9 @@ predictmc<- function(x,jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FAL
     if(!is.null(time)){
     chaz<-timereg::Cpred(chaz, time)
     se.chaz<-timereg::Cpred(se.chaz, time)
-  }
+    }
+  colnames(chaz)<-c("time","chaz")
+  colnames(se.chaz)<-c("time","se.chaz")
   
   if( !is.null(X)) {
     H<-exp(X%*%beta)
