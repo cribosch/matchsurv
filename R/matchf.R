@@ -403,10 +403,11 @@ cumhaz.matchf<-function(object, strata=object$strata){
 
 predictmc<- function(x,jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FALSE,...){
   browser()
+
   chaz<-cumhaz.matchf(x)$chaz
   se.chaz<-cumhaz.matchf(x)$se.chaz
-  
-  if(!is.null(time)){
+
+    if(!is.null(time)){
     chaz<-timereg::Cpred(chaz, time)
     se.chaz<-timereg::Cpred(se.chaz, time)
   }
