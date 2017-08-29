@@ -336,7 +336,7 @@ print.summary.matchpropexc <- function(x,max.strata=5,...){
 
 
 ### {{{ vcovCH.mc
-vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH=NULL, hessian){
+vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
   if (p>0){
     l<-2*p
     
@@ -364,42 +364,46 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH=NULL, hessian){
 
 ### }}} vcovCH.mc
 
-### {{{ cumhaz.matchf
+### {{{ cumhaz
+
+cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian) {
+  chaz <- cbind(time, cumsum(weight/S0))
+  se.chaz<-cbind(time,(vcovCH.mc(p,weight, nevent, xjumps, E, S0, sigmaH,hessian))^0.5)
+  colnames(chaz)<-c("time","chaz")
+  colnames(se.chaz)<-c("time","se.chaz")
+  res<-list(chaz=chaz, se.chaz=se.chaz)
+  return(res)
+}
+
 ##' @export
-cumhaz.matchf<-function(object, strata=object$strata){
+cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
   browser()
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
-  ### computes Breslow estimator and SE
-  jumpstime<-object$jumpstime
-  chaz <- cbind(jumpstime, cumsum(object$weight/object$S0))
-  se.chaz<-cbind(jumpstime,(vcovCH.mc(object$p,object$weight, object$nevent, object$xjumps, object$E, object$S0, sigmaH,
-                                     object$hessian))^0.5)
-  colnames(chaz)<-c("time","chaz")
-  colnames(se.chaz)<-c("time","se.chaz")
+    chaztab<-cumhazmc(object$jumpstime, object$weight, object$S0, 
+                      object$p, object$nevent, object$xjumps, object$E,
+                      sigmaH, object$hessian)
+    if (!is.null(time)) {
+    chaztab<-lapply(chaztab, function(x) timereg::Cpred(x, time))
+    }
   } else {  
     lev<-levels(strata)
-    chaz<-c()
-    se.chaz<-c()
+    chaztab<-c()
+    
     for (i in seq(length(lev))){
-      chaz<-c(chaz, list(cbind(object$jumpstime[[i]],
-                              cumsum(object$weight[[i]]/object$S0[[i]]))))
-      se.chaz<-c(se.chaz, list(cbind(object$jumpstime[[i]],
-                                     (vcovCH.mc(object$p,
-                                                object$weight[[i]],
-                                                object$nevent[[i]],
-                                                object$xjumps[[i]],
-                                                object$E[[i]],
-                                                object$S0[[i]],
-                                                sigmaH,
-                                                object$hessian))^0.5)))
+      chaztab<-cumhazmc(object$jumpstime[[i]], object$weight[[i]], object$S0[[i]], 
+                        object$p, object$nevent[[i]], object$xjumps[[i]], object$E[[i]],
+                        sigmaH, object$hessian)
     }
-    names(chaz)<-names(se.chaz)<-lev
+    names(chaztab)<-lev
+    if(!is.null(time)){
+      chaztab<-lapply(chaztab, function(x) lapply(x,timereg::Cpred(x,time)))
+    }
   }
-  return(list(chaz=chaz, se.chaz=se.chaz))
+  return(chaztab)
 }
 
-### }}} cumhaz.matchf
+### }}} cumhaz
 
 
 ###{{{ predict with se for baseline
@@ -411,8 +415,12 @@ predictmc<- function(x,jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FAL
   se.chaz<-cumhaz.matchf(x)$se.chaz
 
     if(!is.null(time)){
-    chaz<-timereg::Cpred(chaz, time) #problem with the strata. find the way to repeat the same code on all the strata. 
-    se.chaz<-timereg::Cpred(se.chaz, time)
+    chaz<-chaz <- cbind(jumpstime, cumsum(object$weight/object$S0))
+    se.chaz<-cbind(jumpstime,(vcovCH.mc(object$p,object$weight, object$nevent, object$xjumps, object$E, object$S0, sigmaH,
+                                        object$hessian))^0.5)
+    colnames(chaz)<-c("time","chaz")
+    colnames(se.chaz)<-c("time","se.chaz") #problem with the strata. find the way to repeat the same code on all the strata. 
+    
     }
   colnames(chaz)<-c("time","chaz")
   colnames(se.chaz)<-c("time","se.chaz")
