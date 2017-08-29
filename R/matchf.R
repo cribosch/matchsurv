@@ -364,7 +364,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 
 ### }}} vcovCH.mc
 
-### {{{ cumhaz
+### {{{ cumhaz.matchf
 
 cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian) {
   chaz <- cbind(time, cumsum(weight/S0))
@@ -403,7 +403,7 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
   return(chaztab)
 }
 
-### }}} cumhaz
+### }}} cumhaz.matchf
 
 
 ###{{{ predict with se for baseline
