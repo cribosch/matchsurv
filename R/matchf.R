@@ -367,12 +367,9 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 ### {{{ cumhaz.matchf
 
 cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian) {
-  chaz <- cbind(time, cumsum(weight/S0))
-  se.chaz<-cbind(time,(vcovCH.mc(p,weight, nevent, X, E, S0, sigmaH,hessian))^0.5)
-  colnames(chaz)<-c("time","chaz")
-  colnames(se.chaz)<-c("time","se.chaz")
-  res<-list(chaz=chaz, se.chaz=se.chaz)
-  return(res)
+  chaz <- cbind(time, cumsum(weight/S0),(vcovCH.mc(p,weight, nevent, X, E, S0, sigmaH,hessian))^0.5)
+  colnames(chaz)<-c("time","chaz","se.chaz")
+  return(chaz)
 }
 
 ##' @export
@@ -384,7 +381,8 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
                       object$p, object$nevent, object$xjumps, object$E,
                       sigmaH, object$hessian)
     if (!is.null(time)) {
-    chaztab<-lapply(chaztab, function(x) timereg::Cpred(x, time))
+    chaztab<-cbind(timereg::Cpred(chaztab[,1:2], time),
+                   timereg::Cpred(chaztab[,c(1,3)], time))
     }
   } else {  
     lev<-levels(strata)
@@ -397,7 +395,8 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
     }
     names(chaztab)<-lev
     if(!is.null(time)){
-      chaztab<-lapply(chaztab, function(x) lapply(x,timereg::Cpred(x,time)))
+      chaztab<-lapply(chaztab, function(x) cbind(timereg::Cpred(x[,1:2], time),
+                                                 timereg::Cpred(x[,c(1,3)], time)))
     }
   }
   return(chaztab)
