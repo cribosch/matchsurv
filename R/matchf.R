@@ -368,7 +368,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 
 cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian) {
   chaz <- cbind(time, cumsum(weight/S0))
-  se.chaz<-cbind(time,(vcovCH.mc(p,weight, nevent, xjumps, E, S0, sigmaH,hessian))^0.5)
+  se.chaz<-cbind(time,(vcovCH.mc(p,weight, nevent, X, E, S0, sigmaH,hessian))^0.5)
   colnames(chaz)<-c("time","chaz")
   colnames(se.chaz)<-c("time","se.chaz")
   res<-list(chaz=chaz, se.chaz=se.chaz)
