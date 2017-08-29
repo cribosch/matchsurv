@@ -374,7 +374,6 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian) {
 
 ##' @export
 cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
-  browser()
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
     chaztab<-cumhazmc(object$jumpstime, object$weight, object$S0, 
@@ -382,24 +381,29 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
                       sigmaH, object$hessian)
     if (!is.null(time)) {
     chaztab<-cbind(timereg::Cpred(chaztab[,1:2], time),
-                   timereg::Cpred(chaztab[,c(1,3)], time))
+                   timereg::Cpred(chaztab[,c(1,3)], time)[,-1])
+    colnames(chaztab)<-c("time","chaz","se.chaz")
     }
   } else {  
     lev<-levels(strata)
     chaztab<-c()
-    
     for (i in seq(length(lev))){
-      chaztab<-cumhazmc(object$jumpstime[[i]], object$weight[[i]], object$S0[[i]], 
+      chaztab<-c(chaztab, list(cumhazmc(object$jumpstime[[i]], object$weight[[i]], object$S0[[i]], 
                         object$p, object$nevent[[i]], object$xjumps[[i]], object$E[[i]],
-                        sigmaH, object$hessian)
+                        sigmaH, object$hessian)))
     }
     names(chaztab)<-lev
     if(!is.null(time)){
-      chaztab<-lapply(chaztab, function(x) cbind(timereg::Cpred(x[,1:2], time),
-                                                 timereg::Cpred(x[,c(1,3)], time)))
+      chaztab<-lapply(chaztab, function(x) {
+        tab<-cbind(timereg::Cpred(x[,1:2], time),
+              timereg::Cpred(x[,c(1,3)], time)[,-1])
+        colnames(tab)<-c("time","chaz","se.chaz")
+        return(tab)
+      }
+      )
     }
   }
-  return(chaztab)
+    return(chaztab)
 }
 
 ### }}} cumhaz.matchf
@@ -407,23 +411,12 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL){
 
 ###{{{ predict with se for baseline
 
-predictmc<- function(x,jumpstime, S0, weight, beta, time=NULL,X=NULL,relsurv=FALSE,...){
+predictmc<- function(x, beta, time=NULL,X=NULL,relsurv=FALSE,...){
   browser()
 
-  chaz<-cumhaz.matchf(x)$chaz
-  se.chaz<-cumhaz.matchf(x)$se.chaz
+  chaz<-cumhaz.matchf(x,time = time)[,1:2]
+  se.chaz<-cumhaz.matchf(x, time= time)[,-2]
 
-    if(!is.null(time)){
-    chaz<-chaz <- cbind(jumpstime, cumsum(object$weight/object$S0))
-    se.chaz<-cbind(jumpstime,(vcovCH.mc(object$p,object$weight, object$nevent, object$xjumps, object$E, object$S0, sigmaH,
-                                        object$hessian))^0.5)
-    colnames(chaz)<-c("time","chaz")
-    colnames(se.chaz)<-c("time","se.chaz") #problem with the strata. find the way to repeat the same code on all the strata. 
-    
-    }
-  colnames(chaz)<-c("time","chaz")
-  colnames(se.chaz)<-c("time","se.chaz")
-  
   if( !is.null(X)) {
     H<-exp(X%*%beta)
     if (nrow(chaz)==length(H)) {
