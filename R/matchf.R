@@ -278,25 +278,7 @@ matchpropexc <- function(formula, data, cluster, idControl, weight,...){
 }
 ###}}} matchpropexc
 
-###{{{ vcov
-##' @export
-vcov.matchpropexc <- function(object,...){
-  res <-  sandEst(object)
-  attributes(res)$invhess <- attributes(sandEst)$invhess
-  colnames(res) <- rownames(res) <- names(coef(object))
-  res
-}
-###}}} vcov
-
-###{{{ coef
-##' @export
-coef.matchpropexc <- function(object,...) {
-  object$coef
-}
-###}}} coef
-
 ###{{{ sandEst
-##' @export
 sandEst<- function(x,...){
   invhess <- solve(x$hessian)
   if (!is.list(x$weight)){ 
@@ -311,8 +293,35 @@ sandEst<- function(x,...){
 }
 ###}}} sandEst
 
-###{{{ summary
+###{{{ vcov
+##' variance and covariance matrix for the coefficient estimates 
+##' @param object model estimated with matchpropexc
+##' @author Cristina Boschini
+##' @export
+vcov.matchpropexc <- function(object,...){
+  res <-  sandEst(object)
+  attributes(res)$invhess <- attributes(sandEst)$invhess
+  colnames(res) <- rownames(res) <- names(coef(object))
+  res
+}
+###}}} vcov
 
+###{{{ coef
+##' coefficient estimates
+##' @param object model estimated with matchpropexc
+##' @author Cristina Boschini
+##' @export
+coef.matchpropexc <- function(object,...) {
+  object$coef
+}
+###}}} coef
+
+
+###{{{ summary
+##' model summary (coefficient estimates, SE estimates and significance level)
+##' @param object model estimated with matchpropexc
+##' @author Cristina Boschini
+##' @export
 ##' @export
 summary.matchpropexc <- function(object,...){
   cc <- NULL
