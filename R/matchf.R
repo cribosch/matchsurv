@@ -11,7 +11,7 @@ compdata<-function(formula, data, cluster, idControl,...){
   options(na.action = "na.pass")
   cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:5]
-  Terms <- terms(formula,special,data=data, idControl=idControl, cluster=cluster)
+  Terms <- terms(formula,data=data, idControl=idControl, cluster=cluster)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
   m <- eval(m, parent.frame())
