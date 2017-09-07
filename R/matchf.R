@@ -3,15 +3,15 @@
 ##' @param formula formula with 'Surv' outcome (see \code{coxph}); strata aren't different from other covariates.
 ##' @param data data frame
 ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
+##' @param cluster vector cluster indicator (one cluster for each exposed individual)
 ##' @author Cristina Boschini
 ##' @export
-compdata<-function(formula, data, idControl,...){
+compdata<-function(formula, data, cluster, idControl,...){
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   cl <- match.call()
-  m <- match.call(expand.dots=TRUE)[1:4]
-  special <- c("cluster")
-  Terms <- terms(formula,special,data=data, idControl=idControl)
+  m <- match.call(expand.dots=TRUE)[1:5]
+  Terms <- terms(formula,special,data=data, idControl=idControl, cluster=cluster)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
   m <- eval(m, parent.frame())
@@ -28,15 +28,16 @@ compdata<-function(formula, data, idControl,...){
     status <- Y[,3]
     Truncation <- TRUE
   }
-  cluster <- NULL
-  if (!is.null(attributes(Terms)$specials$cluster)){
-    ts <- survival::untangle.specials(Terms, "cluster")
-    Terms <- Terms[-ts$terms]
-    cluster <- m[[ts$vars]]
-  }
+  # cluster <- NULL
+  # if (!is.null(attributes(Terms)$specials$cluster)){
+  #   ts <- survival::untangle.specials(Terms, "cluster")
+  #   Terms <- Terms[-ts$terms]
+  #   cluster <- m[[ts$vars]]
+  # }
   idControl<-model.extract(m,"idControl")
   names(idControl)<- NULL
-
+  cluster<-model.extract(m,"cluster")
+  names(cluster)<- NULL
   
   X <- model.matrix(Terms, m)
   options(na.action = currentOPTs$na.action)
