@@ -1,5 +1,53 @@
 ### {{{ compdata
-compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
+##' Data structured for matchpropexc
+##' @param formula formula with 'Surv' outcome (see \code{coxph}); strata aren't different from other covariates.
+##' @param data data frame
+##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
+##' @author Cristina Boschini
+##' @export
+compdata<-function(formula, data, idControl,...){
+  currentOPTs <- options("na.action")
+  options(na.action = "na.pass")
+  cl <- match.call()
+  m <- match.call(expand.dots=TRUE)[1:4]
+  special <- c("cluster")
+  Terms <- terms(formula,special,data=data, idControl=idControl)
+  m$formula <- Terms
+  m[[1]] <- as.name("model.frame")
+  m <- eval(m, parent.frame())
+  Y <- model.extract(m,"response")
+  if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
+  if (ncol(Y)==2) {
+    exit <- Y[,1]
+    entry <- rep(0,nrow(Y))
+    status <- Y[,2]
+    Truncation <- FALSE
+  } else {
+    entry <- Y[,1]
+    exit <- Y[,2]
+    status <- Y[,3]
+    Truncation <- TRUE
+  }
+  cluster <- NULL
+  if (!is.null(attributes(Terms)$specials$cluster)){
+    ts <- survival::untangle.specials(Terms, "cluster")
+    Terms <- Terms[-ts$terms]
+    cluster <- m[[ts$vars]]
+  }
+  idControl<-model.extract(m,"idControl")
+  names(idControl)<- NULL
+
+  
+  X <- model.matrix(Terms, m)
+  options(na.action = currentOPTs$na.action)
+  
+  if (!is.null(intpos <- attributes(Terms)$intercept))
+    X <- X[,-intpos,drop=FALSE]
+  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+  p<-ncol(X)
+  if(!is.null(colnames(X))) namesX<-colnames(X)
+  else if(p>0) namesX <- paste("var",seq(1,p),sep="")
+  
   if (Truncation){
     
     wp <- mets::familyclusterWithProbands.index(cluster, idControl, Rindex==1)
@@ -22,18 +70,14 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
     weight <- unlist(tapply(weight,group,fund))
     stat <- ifelse(indicator==-1,1,ifelse(weight==1,0,ifelse(weight==0,0,1)))
     
-    d3 <- data.frame(start,end,indicator,stat,group,subj,weight)
+    d3 <- data.frame(start,end,stat,group,subj,weight)
+    colnames(d3)<- c("entry","exit", "status","cluster","unexp.subj","weight")
     
     if (ncol(X)>0) {
       Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
       colnames(Xcases)<-colnames(X)
       d3 <- data.frame(d3,Xcases, check.names=FALSE)
     }
-    
-    if (!is.null(strata)) {
-      strata <- strata[wp$pairs[,2]]
-      d3 <- data.frame(d3, strata, check.names = FALSE)
-    } 
     d3<-d3[d3$start<=d3$end,]
   } else {
     
@@ -55,27 +99,22 @@ compdata<-function(entry,exit,status,cluster,idControl,X,strata,Truncation){
     weight <- unlist(tapply(weight,group,fund))
     stat <- ifelse(indicator==-1,1,ifelse(weight==1,0,ifelse(weight==0,0,1)))
     
-    d3 <- data.frame(end,indicator,stat,group,subj,weight)
+    d3 <- data.frame(end,stat,group,subj,weight)
+    colnames(d3)<- c("exit","status","cluster","unexp.subj","weight")
     
     if (ncol(X)>0) {
       Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
       colnames(Xcases)<-colnames(X)
       d3 <- data.frame(d3,Xcases, check.names=FALSE)
     }
-    
-    if (!is.null(strata)) {
-      strata <- strata[wp$pairs[,2]]
-      d3 <- data.frame(d3, strata, check.names = FALSE)
-    } 
   }
   return(d3)
-  
 }
+
 
 ###}}} compdata
 
 ###{{{ matchpropexc0
-
 matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,cumhaz=TRUE,...){
   if(is.vector(X)) X <- matrix(X, ncol=1)
   p <-ncol(X)
@@ -171,19 +210,22 @@ matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr
 
 ####{{{ matchpropexc
 ##' Excess risk paired survival model
-##' @param formula formula with 'Surv' outcome (see \code{coxph})
+##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables and cluster() to specify the variable cluster
 ##' @param data data frame
-##' @param idControl vector control indicator (the number of controls is expected to be the same for every case)
+##' @param idControl vector control indicator - by default=unexp.subj
+##' @param weight vector that counts how many time the exposed had the event before unexposed invdividuals
 ##' @author Cristina Boschini
 ##' @export
-matchpropexc <- function(formula,data,idControl,...){
-  #  idCase <- eval(substitute(idCase),data)
-  #  idControl <- eval(substitute(idControl),data)
-  #  if (is.null(idCase) | is.null(idControl)) stop("idCase and idControl needed")
+matchpropexc <- function(formula, data, cluster, idControl, weight,...){
+  
+  if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
+  if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
+  if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
+  
   cl <- match.call()
-  m <- match.call(expand.dots=TRUE)[1:4]
-  special <- c("strata","cluster")
-  Terms <- terms(formula,special,data=data, idControl=idControl)
+  m <- match.call(expand.dots=TRUE)[1:6]
+  special <- c("strata")
+  Terms <- terms(formula,special,data=data, idControl=idControl, cluster=cluster, weight=weight)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
   m <- eval(m, parent.frame())
@@ -206,14 +248,20 @@ matchpropexc <- function(formula,data,idControl,...){
     Terms <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
   }
-  cluster <- NULL
-  if (!is.null(attributes(Terms)$specials$cluster)){
-    ts <- survival::untangle.specials(Terms, "cluster")
-    Terms <- Terms[-ts$terms]
-    cluster <- m[[ts$vars]]
-  }
+  # cluster <- NULL
+  # if (!is.null(attributes(Terms)$specials$cluster)){
+  #   ts <- survival::untangle.specials(Terms, "cluster")
+  #   Terms <- Terms[-ts$terms]
+  #   cluster <- m[[ts$vars]]
+  # }
+  
+  cluster<-model.extract(m,"cluster")
+  names(cluster)<- NULL
   idControl<-model.extract(m,"idControl")
   names(idControl)<- NULL
+  weight<-model.extract(m,"weight")
+  names(weight)<- NULL
+  
   X <- model.matrix(Terms, m)
   if (!is.null(intpos <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
@@ -222,23 +270,6 @@ matchpropexc <- function(formula,data,idControl,...){
   if(!is.null(colnames(X))) namesX<-colnames(X)
   else if(p>0) namesX <- paste("var",seq(1,p),sep="")
   
-  if (Truncation) {
-    setupdata <- compdata(entry,exit,status,cluster,idControl,X,strata,Truncation)
-  } else setupdata <- compdata(entry=NULL,exit,status,cluster,idControl,X,strata,Truncation)
-  
-  exit <-setupdata$end    
-  if (Truncation) {
-    entry <- setupdata$start
-  } else entry <- rep(0,nrow(Y))
-  
-  if (p>0) {
-    X <- as.matrix(setupdata[,namesX], ncol=p)
-    colnames(X)<-namesX
-  }
-  
-  status <- setupdata$stat
-  weight <- setupdata$weight
-  strata <- setupdata$strata
   res <- c(matchpropexc0(X,entry, exit,status,weight,strata,...),list(call=cl, model.frame=m))
   class(res) <- "matchpropexc"
   
