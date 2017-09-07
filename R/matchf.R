@@ -218,6 +218,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr
 ##' @export
 matchpropexc <- function(formula, data, cluster, idControl, weight,...){
   
+  browser()
+  
   if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
   if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
   if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
