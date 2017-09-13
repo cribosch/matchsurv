@@ -69,7 +69,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     fund <- function(x) (!(duplicated(x>1) & x>1))*x
     
     weight <- unlist(tapply(weight,group,fund))
-    stat <- ifelse(indicator==-1,1,ifelse(weight==1,0,ifelse(weight==0,0,1)))
+    stat <- ifelse(indicator==-1,1,ifelse(weight==1 & indicator==0,0,ifelse(weight==0,0,1)))
     
     d3 <- data.frame(start,end,stat,group,subj,weight)
     colnames(d3)<- c("entry","exit", "status","cluster","unexp.subj","weight")
