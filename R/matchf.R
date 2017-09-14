@@ -7,7 +7,6 @@
 ##' @author Cristina Boschini
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
-  browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   cl <- match.call()
@@ -72,7 +71,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     weight <- unlist(tapply(weight,group,fund))
     stat <- ifelse(indicator==-1,1,
                    ifelse(indicator==1,
-                          ifelse(weight==1,1,0),0))
+                          ifelse(weight>=1,1,0),0))
     
     d3 <- data.frame(start,end,stat,group,subj,weight)
     colnames(d3)<- c("entry","exit", "status","cluster","unexp.subj","weight")
@@ -103,7 +102,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     weight <- unlist(tapply(weight,group,fund))
     stat <- ifelse(indicator==-1,1,
                    ifelse(indicator==1,
-                          ifelse(weight==1,1,0),0))
+                          ifelse(weight>=1,1,0),0))
     
     d3 <- data.frame(end,stat,group,subj,weight)
     colnames(d3)<- c("exit","status","cluster","unexp.subj","weight")
