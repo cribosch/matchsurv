@@ -412,7 +412,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 ### {{{ cumhaz.matchf
 
 cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcumhaz=FALSE) {
-  if(!SEcumhaz) {
+  if (SEcumhaz) {
     chaz <- cbind(time, cumsum(weight/S0),(vcovCH.mc(p,weight, nevent, X, E, S0, sigmaH,hessian))^0.5)
     colnames(chaz)<-c("time","chaz","se.chaz")
     
