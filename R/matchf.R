@@ -384,15 +384,14 @@ print.summary.matchpropexc <- function(x,max.strata=5,...){
 vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
   if (p>0){
     l<-2*p
-    
-    matW <- diag(as.vector(weight), nrow=nevent)
-    H <- apply((matW%*%E), 2, function(x) (x/S0)*(-1))
-    covT <- apply((X-E),2, function(x) (x/S0)*weight^2)
+    H<--1*E*c(weight)/c(S0)
+    covT <- (X-E)*c(weight^2)/c(S0)
     I <- solve(hessian)
+    cumH<-apply(H,2,cumsum)
     
-    term1 <- apply(apply(H,2,cumsum),1,function(x) t(x)%*%sigmaH%*%x)
+    term1 <- apply(cumH,1,function(x) t(x)%*%sigmaH%*%x)
     term2term3 <- cumsum(weight^2/S0^2)
-    term4term5 <- apply(cbind(apply(H,2,cumsum),apply(covT,2,cumsum)),1,function(x) {
+    term4term5 <- apply(cbind(cumH,apply(covT,2,cumsum)),1,function(x) {
       x1<-x[1:p]
       x2<-x[(p+1):l]
       2*t(x1)%*%I%*%x2
@@ -411,7 +410,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 
 ### {{{ cumhaz.matchf
 
-cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcumhaz=FALSE) {
+cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcumhaz=TRUE) {
   if (SEcumhaz) {
     chaz <- cbind(time, cumsum(weight/S0),(vcovCH.mc(p,weight, nevent, X, E, S0, sigmaH,hessian))^0.5)
     colnames(chaz)<-c("time","chaz","se.chaz")
@@ -425,7 +424,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 }
 
 ##' @export
-cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=FALSE){
+cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=TRUE){
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
     chaztab<-cumhazmc(object$jumpstime, object$weight, object$S0, 
