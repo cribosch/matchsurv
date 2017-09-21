@@ -432,9 +432,14 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=FALSE)
                       object$p, object$nevent, object$xjumps, object$E,
                       sigmaH, object$hessian, SEcumhaz)
     if (!is.null(time)) {
-    chaztab<-cbind(timereg::Cpred(chaztab[,1:2], time),
-                   timereg::Cpred(chaztab[,c(1,3)], time)[,-1])
-    colnames(chaztab)<-c("time","chaz","se.chaz")
+      if (SEcumhaz) {
+        chaztab<-cbind(timereg::Cpred(chaztab[,1:2], time),
+                       timereg::Cpred(chaztab[,c(1,3)], time)[,-1])
+        colnames(chaztab)<-c("time","chaz","se.chaz")
+      } else {
+        chaztab<-timereg::Cpred(chaztab, time)
+        colnames(chaztab)<-c("time","chaz")
+      }
     }
   } else {  
     lev<-levels(strata)
@@ -446,13 +451,22 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=FALSE)
     }
     names(chaztab)<-lev
     if(!is.null(time)){
-      chaztab<-lapply(chaztab, function(x) {
-        tab<-cbind(timereg::Cpred(x[,1:2], time),
-              timereg::Cpred(x[,c(1,3)], time)[,-1])
-        colnames(tab)<-c("time","chaz","se.chaz")
-        return(tab)
+      if (SEcumhaz) {
+        chaztab<-lapply(chaztab, function(x) {
+          tab<-cbind(timereg::Cpred(x[,1:2], time),
+                     timereg::Cpred(x[,c(1,3)], time)[,-1])
+          colnames(tab)<-c("time","chaz","se.chaz")
+          return(tab)
       }
       )
+      } else {
+        chaztab<-lapply(chaztab, function(x) {
+          tab<-timereg::Cpred(x[,1:2], time)
+          colnames(tab)<-c("time","chaz")
+          return(tab)
+        }
+        )
+      }
     }
   }
     return(chaztab)
