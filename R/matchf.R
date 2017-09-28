@@ -564,6 +564,7 @@ predict.matchpropexc <- function(object, data,
     }
     names(chaz)<-lev
   } else {
+    chaztab<-cumhaz.matchf(object,time=time)
     chaz <- predictmc(chaztab,beta,X, relsurv)
   }
   return(chaz)
