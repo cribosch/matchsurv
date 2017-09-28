@@ -226,7 +226,6 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data, cluster, idControl, weight,...){
-  
   if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
   if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
   if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
@@ -280,8 +279,11 @@ matchpropexc <- function(formula, data, cluster, idControl, weight,...){
   if(!is.null(colnames(X))) namesX<-colnames(X)
   else if(p>0) namesX <- paste("var",seq(1,p),sep="")
   
-  res <- c(matchpropexc0(X,entry, exit,status,weight,strata,
-                         strata.name,...),list(call=cl, model.frame=m))
+  res <- c(matchpropexc0(X,entry=entry,exit=exit,
+                         status=status,weight=weight,
+                         strata=strata,
+                         strata.name=strata.name,...),
+           list(call=cl, model.frame=m))
   class(res) <- "matchpropexc"
   
   res
