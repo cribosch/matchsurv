@@ -206,7 +206,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr
                 status=status,
                 p=p,
                 X=X,
-                weight=weight, opt=opt))
+                weight=weight, opt=opt,
+                nstrata=nstrata))
   
   class(res) <- "matchpropexc"
   res
@@ -423,8 +424,8 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
   return(chaz)
 }
 
-##' @export
-cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=TRUE){
+cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
+                        SEcumhaz=TRUE){
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
     chaztab<-cumhazmc(object$jumpstime, object$weight, object$S0, 
@@ -478,9 +479,13 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL, SEcumhaz=TRUE){
 
 predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
   browser()
-
-  chaz<-chaztab[,1:2]
-  se.chaz<-chaztab[,-2]
+  if (ncol(chaztab)==3) {
+    chaz<-chaztab[,1:2]
+    se.chaz<-chaztab[,-2]
+  } else {  
+    chaz<-chaztab
+    warning("no SE for cumhaz")
+  }
 
   if( !is.null(X)) {
     H<-exp(X%*%beta)
@@ -507,10 +512,10 @@ predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
 
 ##' @export #not working properly
 predict.matchpropexc <- function(object, data,
+                                 relsurv=FALSE,
                                  time=object$exit,
                                  X=object$X,
-                                 strata=object$strata,
-                                 relsurv=FALSE,...){
+                                 strata=object$strata,...){
   browser()
   if (object$p==0) X<-NULL
   # if (!is.null(object$strata) &&
@@ -536,12 +541,26 @@ predict.matchpropexc <- function(object, data,
   #       time <-c(time, list(time0[idx]))
   #     }
   #   }
-  if(!is.null(strata)){
+  if(!is.null(object$strata)){
     lev <-levels(object$strata)
+    if (!is.null(object$strata) &&
+        !(is.list(time) & !is.data.frame(time)) &&
+        !(is.list(X) & !is.data.frame(X))) {
+      X0 <- X
+      time0 <- time
+      X <- time <- c()
+      for (i in seq(length(lev))) {
+        idx <- which(strata==lev[i])
+        X <- c(X,list(X0[idx,,drop=FALSE]))
+        time <- c(time,list(time0[idx]))
+      }
+    }
     chaz<-c()
     for (i in seq(length(lev))){
       chaztab<-cumhaz.matchf(object,time=time)[[i]]
-      chaz<-c(chaz, list(predictmc(chaztab,coef(object),X,relsurv)))
+      chaz<-c(chaz, list(predictmc(chaztab,
+                                   coef(object),
+                                   X[[i]],relsurv)))
     }
     names(chaz)<-lev
   } else {
