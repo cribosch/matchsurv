@@ -120,7 +120,9 @@ compdata<-function(formula, data, cluster, idControl,...){
 ###}}} compdata
 
 ###{{{ matchpropexc0
-matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr=TRUE,cumhaz=TRUE,...){
+matchpropexc0 <- function(X,entry, exit, status, weight,
+                          strata=NULL, beta,stderr=TRUE,
+                          strata.name=NULL,...){
   if(is.vector(X)) X <- matrix(X, ncol=1)
   p <-ncol(X)
   if (missing(beta)) beta <-rep(0,p)
@@ -207,7 +209,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,strata=NULL, beta,stderr
                 p=p,
                 X=X,
                 weight=weight, opt=opt,
-                nstrata=nstrata))
+                nstrata=nstrata,
+                strata.name=strata.name))
   
   class(res) <- "matchpropexc"
   res
@@ -253,7 +256,8 @@ matchpropexc <- function(formula, data, cluster, idControl, weight,...){
     ts <- survival::untangle.specials(Terms, "strata")
     Terms <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
-  }
+    strata.name<-ts$vars
+  } else strata.name <- NULL
   # cluster <- NULL
   # if (!is.null(attributes(Terms)$specials$cluster)){
   #   ts <- survival::untangle.specials(Terms, "cluster")
@@ -276,7 +280,8 @@ matchpropexc <- function(formula, data, cluster, idControl, weight,...){
   if(!is.null(colnames(X))) namesX<-colnames(X)
   else if(p>0) namesX <- paste("var",seq(1,p),sep="")
   
-  res <- c(matchpropexc0(X,entry, exit,status,weight,strata,...),list(call=cl, model.frame=m))
+  res <- c(matchpropexc0(X,entry, exit,status,weight,strata,
+                         strata.name,...),list(call=cl, model.frame=m))
   class(res) <- "matchpropexc"
   
   res
@@ -478,7 +483,6 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
 ###{{{ predict with se for baseline
 
 predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
-  browser()
   if (ncol(chaztab)==3) {
     chaz<-chaztab[,1:2]
     se.chaz<-chaztab[,-2]
@@ -516,7 +520,6 @@ predict.matchpropexc <- function(object, data,
                                  time=object$exit,
                                  X=object$X,
                                  strata=object$strata,...){
-  browser()
   if (object$p==0) X<-NULL
   # if (!is.null(object$strata) &&
   #     !all(time %in% object$exit) &&
@@ -573,16 +576,182 @@ predict.matchpropexc <- function(object, data,
 
 ###{{{ plot
 
-##' @export #not working properly
-plot.matchpropexc <-function(x, relsurv=FALSE, X=NULL, time=NULL, add=FALSE, conf.int=FALSE,...) {
-  require(ggplot2)
-  if (!is.null(X) && nrow(X)>1) {
-    P <- lapply(unique(split(X,seq(nrow(X)))),function(xx) predict(x,X=xx,time=time,relsurv=surv))
-  } else {
-    P <- predict(x,X=X,time=time,relsurv=relsurv)
+##' Plotting the cumulative baseline excess hazard
+##'
+##' Plotting the cumulative baselines excess hazard
+##' @param x matchpropexc object
+##' @param se to include standard errors
+##' @param time to plot for specific time variables
+##' @param add to add to previous plot 
+##' @param ylim to give ylim 
+##' @param lty to specify lty of components
+##' @param col to specify col of components
+##' @param legend to specify col of components
+##' @param ylab to specify ylab 
+# ##' @param polygon to get standard error in shaded form
+##' @param level of standard errors
+##' @param stratas wich strata to plot 
+##' @param ... Additional arguments to lower level funtions
+##' @author Cristina 
+##' @export
+
+##' @export
+excplot.matchpropexc  <- function(x, se=FALSE,
+                                  time=NULL, add=FALSE,
+                                  ylim=NULL,
+                                  lty=NULL,col=NULL,legend=TRUE,
+                                  ylab="Baseline cumulative excess hazard",
+                                  #polygon=TRUE,
+                                  level=0.95,
+                                  stratas=NULL,...) {# {{{
+  browser()
+  level <- -qnorm((1-level)/2)
+  if(!is.null(x$strata)) {
+    cumhaz<-cumhaz.matchf(x)
+    rr <- range(cumhaz[,2])
+    liststrata<-lapply(levels(x$strata), function(l) x$strata[x$strata==l])
+    strat <- NULL
+    for (i in 1:length(x$nstrata)){
+      pstrat<-listrata[[i]][x$jumps[[i]]]
+      strat<-c(strat,pstrat)
+      }
+    if (is.null(ylim)) ylim <- rr
+    if (se==TRUE) {
+      if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
+      rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
+      ylim <- rrse
+    }
+  }
+
+  ## all strata
+  if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
+  
+  ltys <- lty
+  cols <- col
+  
+  if (length(stratas)>0 & x$nstrata>1) { ## with strata
+    ms <- match(x$strata.name,names(x$model.frame))
+    lstrata <- levels(x$model.frame[,ms])[(stratas+1)]
+    stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
+    stratnames <- paste(stratn,lstrata,sep=":")
+    if (!is.matrix(lty)) {
+      if (is.null(lty)) ltys <- 1:length(stratas) else if (length(lty)!=length(stratas)) ltys <- rep(lty[1],length(stratas))
+    } else ltys <- lty
+    if (!is.matrix(col)) {
+      if (is.null(col)) cols <- 1:length(stratas) else 
+        if (length(col)!=length(stratas)) cols <- rep(col[1],length(stratas))
+    } else cols <- col
+  } else { 
+    stratnames <- "Baseline" 
+    if (is.matrix(col))  cols <- col
+    if (is.null(col)) cols <- 1  else cols <- col[1]
+    if (is.matrix(lty))  ltys <- lty
+    if (is.null(lty)) ltys <- 1  else ltys <- lty[1]
   }
   
+  if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
+  if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
   
-}
-###}}}
+  i <- 1
+  j <- stratas[i]
+  cumhazard <- x$cumhaz[strat==j,]
+  if (add) {
+    lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
+  } else {
+    plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
+  }
+  if (se==TRUE) {
+    secumhazard <- x$se.cumhaz[strat==j,]
+    ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
+    nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+    if (!polygon) {
+      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
+    } else {
+      tt <- c(nl[,1],rev(ul[,1]))
+      yy <- c(nl[,2],rev(ul[,2]))
+      col.alpha<-0.1
+      col.ci<-cols[j+1]
+      col.trans <- sapply(col.ci, FUN=function(x) 
+        do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+      polygon(tt,yy,lty=ltys[i,2],col=col.trans)
+    }
+  }
+  
+  if (length(stratas)>1)  {
+    for (i in 2:length(stratas)) {
+      j <- stratas[i]
+      cumhazard <- x$cumhaz[strat==j,]
+      lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
+      if (se==TRUE) {
+        secumhazard <- x$se.cumhaz[strat==j,]
+        ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
+        nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+        if (!polygon) {
+          lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+          lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
+        } else {
+          tt <- c(nl[,1],rev(ul[,1]))
+          yy <- c(nl[,2],rev(ul[,2]))
+          col.alpha<-0.1
+          col.ci<-cols[j+1]
+          col.trans <- sapply(col.ci, FUN=function(x) 
+            do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+          polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+        }
+      }
+    }
+  }
+  
+  if (legend)
+    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+  
+}# }}}
 
+##' @export
+lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+
+###}}} plot
+
+###{{{ plot
+
+##' @export
+plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
+  if (!is.null(X) && nrow(X)>1) {
+    P <- lapply(split(X,seq(nrow(X))),function(xx) predict(x,X=xx,time=time,surv=surv))
+  } else {
+    P <- predict(x,X=X,time=time,surv=surv)
+  }
+  if (!is.list(P)) {
+    if (add) {
+      lines(P,type="s",...)
+    } else {
+      plot(P,type="s",...)
+    }
+    return(invisible(P))
+  }
+  
+  if (add) {
+    lines(P[[1]][,1:2],type="s",lty=1,col=1,...)
+  } else {
+    plot((P[[1]])[,1:2],type="s",lty=1,col=1,...)
+  }
+  for (i in seq_len(length(P)-1)+1) {
+    lines(P[[i]][,1:2],type="s",lty=i,col=i,...)   
+  }
+  return(invisible(P))
+}
+
+##' @export
+lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+
+###}}} plot
+
+###{{{ print
+##' @export
+print.phreg  <- function(x,...) {
+  cat("Call:\n")
+  dput(x$call)
+  print(summary(x),...)
+}
+###}}} print
