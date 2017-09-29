@@ -431,6 +431,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
   return(chaz)
 }
 
+##' @export
 cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
                         SEcumhaz=TRUE){
   if (object$p>0) sigmaH <- vcov(object)
@@ -485,18 +486,13 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
 ###{{{ predict with se for baseline
 
 predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
-  if (ncol(chaztab)==3) {
-    chaz<-chaztab[,1:2]
-    se.chaz<-chaztab[,-2]
-  } else {  
-    chaz<-chaztab
-    warning("no SE for cumhaz")
-  }
+  if (!ncol(chaztab)==3) warning("no SE for cumhaz")
+  chaz<-chaztab
 
   if( !is.null(X)) {
     H<-exp(X%*%beta)
     if (nrow(chaz)==length(H)) {
-      chaz[,2] <- chaz[,2]*H
+      chaz <- cbind(chaz[,1],chaz[,2]*H)
     } else {
       chaz2 <- c()
       X <- rbind(X)
@@ -561,7 +557,7 @@ predict.matchpropexc <- function(object, data,
 }
 ###}}} predict
 
-###{{{ plot
+###{{{ excplot
 
 ##' Plotting the cumulative baseline excess hazard
 ##'
@@ -590,34 +586,17 @@ excplot.matchpropexc  <- function(x, se=FALSE,
                                   ylab="Baseline cumulative excess hazard",
                                   polygon=TRUE,
                                   level=0.95,
-                                  stratas=NULL,...) {# {{{
+                                  stratas=NULL,
+                                  relsurv=FALSE,...) {# {{{
   level <- -qnorm((1-level)/2)
-  if(!is.null(x$strata)) {
-    listcumhaz<-cumhaz.matchf(x)
-    rr <- range(do.call("rbind",listcumhaz)[,2])
-    liststrata<-lapply(levels(x$strata), function(l) x$strata[x$strata==l])
-    strat <- NULL
-    for (i in 1:x$nstrata){
-      pstrat<-liststrata[[i]][x$jumps[[i]]]
-      strat<-c(strat,pstrat)
-    }
-    strat<-strat-1
-    cumhaz<-cbind(do.call("rbind", listcumhaz), strat)
-    if (is.null(ylim)) ylim <- rr
-    if (se==TRUE) {
-      if (ncol(cumhaz)<4) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
-      rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
-      ylim <- rrse
-    }
-  }
-
   ## all strata
   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
   
   ltys <- lty
   cols <- col
   
-  if (length(stratas)>0 & x$nstrata>1) { ## with strata
+  ## with strata
+  if (length(stratas)>0 & x$nstrata>1) { 
     ms <- match(x$strata.name,names(x$model.frame))
     lstrata <- levels(x$model.frame[,ms])[(stratas+1)]
     stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
@@ -640,17 +619,53 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
   if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
   
+  listcumhaz<-cumhaz.matchf(x, time=time)
+  cumhaz<-do.call("rbind",listcumhaz )
+  
+  if(!is.null(x$strata)) {
+    if(!relsurv) {
+      rr <- range(cumhaz[,2])
+    } else rr<-range(exp(-cumhaz[,2]))
+
+    if (is.null(ylim)) ylim <- rr
+    if (se==TRUE) {
+      if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
+      if (!relsurv) {
+        rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
+      } else {
+        rrse <- range(c(exp(-(cumhaz[,2]+level*cumhaz[,3]))))
+      }
+      ylim <- rrse
+    }
+  }
+    
   i <- 1
-  cumhazard <- listcumhaz[[i]][,1:2]
-  if (add) {
-    lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
+  
+  if (!relsurv) {
+    plotcurve <- listcumhaz[[i]][,1:2]
   } else {
-    plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
+    plotcurve<-cbind(listcumhaz[[i]][,1], exp(-listcumhaz[[i]][,2]))
+  }
+  
+  cumhazse<-listcumhaz[[i]]
+  
+  if (add) {
+    lines(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],...)
+  } else {
+    plot(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
   }
   if (se==TRUE) {
-    secumhazard <- listcumhaz[[i]][,c(1,3)]
-    ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
-    nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+    if (!relsurv) {
+      secumhazard <- cumhazse[,c(1,3)]
+      ul <-cbind(plotcurve[,1],plotcurve[,2]+level*secumhazard[,2])
+      nl <-cbind(plotcurve[,1],plotcurve[,2]-level*secumhazard[,2])
+    } else {
+      secumhazard <- cumhazse[,c(1,3)]
+      cumhazard <- cumhazse[,2]
+      ul <-cbind(plotcurve[,1],exp(-(cumhazard-level*secumhazard[,2])))
+      nl <-cbind(plotcurve[,1],exp(-(cumhazard+level*secumhazard[,2])))
+    }
+    
     if (!polygon) {
       lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
       lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
@@ -661,18 +676,31 @@ excplot.matchpropexc  <- function(x, se=FALSE,
       col.ci<-cols[i]
       col.trans <- sapply(col.ci, FUN=function(x) 
         do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
-      polygon(tt,yy,lty=ltys[i,2],col=col.trans)
+      polygon(tt,yy,lty=ltys[i,2],col=col.trans, border = cols[i,1])
     }
   }
   
   if (length(stratas)>1)  {
     for (i in 2:length(stratas)) {
-      cumhazard <- listcumhaz[[i]][,1:2]
-      lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
+      if (!relsurv) {
+        plotcurve <- listcumhaz[[i]][,1:2]
+      } else {
+        plotcurve<-cbind(listcumhaz[[i]][,1], exp(-listcumhaz[[i]][,2]))
+      }
+      cumhazse<-listcumhaz[[i]]
+      lines(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1])   
       if (se==TRUE) {
-        secumhazard <- listcumhaz[[i]][,c(1,3)]
-        ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
-        nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+        if (!relsurv) {
+          secumhazard <- cumhazse[,c(1,3)]
+          ul <-cbind(plotcurve[,1],plotcurve[,2]+level*secumhazard[,2])
+          nl <-cbind(plotcurve[,1],plotcurve[,2]-level*secumhazard[,2])
+        } else {
+          secumhazard <- cumhazse[,c(1,3)]
+          cumhazard<-cumhazse[,2]
+          ul <-cbind(plotcurve[,1],exp(-(cumhazard-level*secumhazard[,2])))
+          nl <-cbind(plotcurve[,1],exp(-(cumhazard+level*secumhazard[,2])))
+        }
+        
         if (!polygon) {
           lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
           lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
@@ -683,21 +711,24 @@ excplot.matchpropexc  <- function(x, se=FALSE,
           col.ci<-cols[i]
           col.trans <- sapply(col.ci, FUN=function(x) 
             do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
-          polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+          polygon(tt,yy,lty=ltys[1,2],col=col.trans, border = cols[i,1])
         }
       }
     }
   }
   
   if (legend)
-    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+    if(!relsurv) {
+      legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1], bty="n")
+    } else legend("bottomleft",legend=stratnames,col=cols[,1],lty=ltys[,1], bty="n")
   
-}# }}}
+  
+}# }}} 
 
 ##' @export
-lines.matchpropexc <- function(x,...,add=TRUE) plot(x,...,add=add)
+lines.matchpropexc <- function(x,...,add=TRUE) excplot.matchpropexc(x,...,add=add)
 
-###}}} plot
+###}}} excplot
 
 ###{{{ plot
 
