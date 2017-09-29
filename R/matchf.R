@@ -516,36 +516,13 @@ predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
   return(chaz)
 }
 
-##' @export #not working properly
+##' @export 
 predict.matchpropexc <- function(object, data,
                                  relsurv=FALSE,
                                  time=object$exit,
                                  X=object$X,
                                  strata=object$strata,...){
   if (object$p==0) X<-NULL
-  # if (!is.null(object$strata) &&
-  #     !all(time %in% object$exit) &&
-  #     !(is.list(X) & !is.data.frame(X))) {
-  #   lev <-levels(object$strata)
-  #   time0<-time
-  #   time<-rep(list(time0), length(lev))
-  #   X0<-X
-  #   X<-rep(list(X), length(X))
-  # }
-  # if(!is.null(object$strata)) {
-  #   lev <-levels(object$strata)
-  #   if (!is.null(object$strata) &&
-  #       !(is.list(time) & !is.data.frame(time)) &&
-  #       !(is.list(X) & !is.data.frame(X))) {
-  #     time0<-time
-  #     X0<-X
-  #     X<-time<-c()
-  #     for (i in seq(length(lev))) {
-  #       idx <- which(strata==lev[i])
-  #       X <-c(X, list(X0[idx,,drop=FALSE]))
-  #       time <-c(time, list(time0[idx]))
-  #     }
-  #   }
   if(!is.null(object$strata)){
     lev <-levels(object$strata)
     if (!is.null(object$strata) &&
@@ -554,15 +531,23 @@ predict.matchpropexc <- function(object, data,
       X0 <- X
       time0 <- time
       X <- time <- c()
-      for (i in seq(length(lev))) {
-        idx <- which(strata==lev[i])
-        X <- c(X,list(X0[idx,,drop=FALSE]))
-        time <- c(time,list(time0[idx]))
+      if (all(time0 %in% object$exit)){
+        for (i in seq(length(lev))) {
+          idx <- which(strata==lev[i])
+          X <- c(X,list(X0[idx,,drop=FALSE]))
+          time <- c(time,list(time0[idx]))
+        }
+      } else {
+        for (i in seq(length(lev))) {
+          idx <- which(strata==lev[i])
+          X <- c(X,list(X0[idx,,drop=FALSE]))
+          time<-c(time,list(time0))
+        }
       }
     }
     chaz<-c()
-    for (i in seq(length(lev))){
-      chaztab<-cumhaz.matchf(object,time=time)[[i]]
+    for (i in seq(length(lev))) {
+      chaztab<-cumhaz.matchf(object,time=time[[i]])[[i]]
       chaz<-c(chaz, list(predictmc(chaztab,
                                    coef(object),
                                    X[[i]],relsurv)))
@@ -590,7 +575,7 @@ predict.matchpropexc <- function(object, data,
 ##' @param col to specify col of components
 ##' @param legend to specify col of components
 ##' @param ylab to specify ylab 
-# ##' @param polygon to get standard error in shaded form
+##' @param polygon to get standard error in shaded form
 ##' @param level of standard errors
 ##' @param stratas wich strata to plot 
 ##' @param ... Additional arguments to lower level funtions
@@ -603,23 +588,24 @@ excplot.matchpropexc  <- function(x, se=FALSE,
                                   ylim=NULL,
                                   lty=NULL,col=NULL,legend=TRUE,
                                   ylab="Baseline cumulative excess hazard",
-                                  #polygon=TRUE,
+                                  polygon=TRUE,
                                   level=0.95,
                                   stratas=NULL,...) {# {{{
-  browser()
   level <- -qnorm((1-level)/2)
   if(!is.null(x$strata)) {
-    cumhaz<-cumhaz.matchf(x)
-    rr <- range(cumhaz[,2])
+    listcumhaz<-cumhaz.matchf(x)
+    rr <- range(do.call("rbind",cumhaz)[,2])
     liststrata<-lapply(levels(x$strata), function(l) x$strata[x$strata==l])
     strat <- NULL
-    for (i in 1:length(x$nstrata)){
-      pstrat<-listrata[[i]][x$jumps[[i]]]
+    for (i in 1:x$nstrata){
+      pstrat<-liststrata[[i]][x$jumps[[i]]]
       strat<-c(strat,pstrat)
-      }
+    }
+    strat<-strat-1
+    cumhaz<-cbind(do.call("rbind", listcumhaz), strat)
     if (is.null(ylim)) ylim <- rr
     if (se==TRUE) {
-      if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
+      if (ncol(cumhaz)<4) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
       rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
       ylim <- rrse
     }
@@ -655,15 +641,14 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
   
   i <- 1
-  j <- stratas[i]
-  cumhazard <- x$cumhaz[strat==j,]
+  cumhazard <- listcumhaz[[i]][,1:2]
   if (add) {
     lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
   } else {
     plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
   }
   if (se==TRUE) {
-    secumhazard <- x$se.cumhaz[strat==j,]
+    secumhazard <- listcumhaz[[i]][,c(1,3)]
     ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
     nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
     if (!polygon) {
@@ -673,7 +658,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
       tt <- c(nl[,1],rev(ul[,1]))
       yy <- c(nl[,2],rev(ul[,2]))
       col.alpha<-0.1
-      col.ci<-cols[j+1]
+      col.ci<-cols[i]
       col.trans <- sapply(col.ci, FUN=function(x) 
         do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
       polygon(tt,yy,lty=ltys[i,2],col=col.trans)
@@ -682,11 +667,10 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   
   if (length(stratas)>1)  {
     for (i in 2:length(stratas)) {
-      j <- stratas[i]
-      cumhazard <- x$cumhaz[strat==j,]
+      cumhazard <- listcumhaz[[i]][,1:2]
       lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
       if (se==TRUE) {
-        secumhazard <- x$se.cumhaz[strat==j,]
+        secumhazard <- listcumhaz[[i]][,c(1,3)]
         ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
         nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
         if (!polygon) {
@@ -696,7 +680,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
           tt <- c(nl[,1],rev(ul[,1]))
           yy <- c(nl[,2],rev(ul[,2]))
           col.alpha<-0.1
-          col.ci<-cols[j+1]
+          col.ci<-cols[i]
           col.trans <- sapply(col.ci, FUN=function(x) 
             do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
           polygon(tt,yy,lty=ltys[1,2],col=col.trans)
@@ -711,14 +695,15 @@ excplot.matchpropexc  <- function(x, se=FALSE,
 }# }}}
 
 ##' @export
-lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+lines.matchpropexc <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
 
 ###{{{ plot
 
 ##' @export
-plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
+plot.matchpropexc  <- function(x,relsurv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
+  browser()
   if (!is.null(X) && nrow(X)>1) {
     P <- lapply(split(X,seq(nrow(X))),function(xx) predict(x,X=xx,time=time,surv=surv))
   } else {
@@ -749,11 +734,4 @@ lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
 
-###{{{ print
-##' @export
-print.phreg  <- function(x,...) {
-  cat("Call:\n")
-  dput(x$call)
-  print(summary(x),...)
-}
-###}}} print
+
