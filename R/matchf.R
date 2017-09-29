@@ -620,39 +620,43 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
   
   listcumhaz<-cumhaz.matchf(x, time=time)
-  cumhaz<-do.call("rbind",listcumhaz )
-  
   if(!is.null(x$strata)) {
-    if(!relsurv) {
-      rr <- range(cumhaz[,2])
-    } else rr<-range(exp(-cumhaz[,2]))
+    cumhaz<-do.call("rbind",listcumhaz )
+  } else cumhaz<-listcumhaz
+  
 
-    if (is.null(ylim)) ylim <- rr
-    if (se==TRUE) {
-      if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
-      if (!relsurv) {
-        rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
-      } else {
-        rrse <- range(c(exp(-(cumhaz[,2]+level*cumhaz[,3]))))
-      }
-      ylim <- rrse
+  if(!relsurv) {
+    rr <- range(cumhaz[,2])
+  } else rr<-range(exp(-cumhaz[,2]))
+  
+  if (is.null(ylim)) ylim <- rr
+  if (se==TRUE) {
+    if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
+    if (!relsurv) {
+      rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
+    } else {
+      rrse <- range(c(exp(-(cumhaz[,2]+level*cumhaz[,3]))))
     }
+    ylim <- rrse
   }
-    
+
+
   i <- 1
-  
+  if(!is.null(x$strata)) {
+    listcumhaz1<-listcumhaz[[i]]
+  } else listcumhaz1<-listcumhaz
   if (!relsurv) {
-    plotcurve <- listcumhaz[[i]][,1:2]
+    plotcurve <- listcumhaz1[,1:2]
   } else {
-    plotcurve<-cbind(listcumhaz[[i]][,1], exp(-listcumhaz[[i]][,2]))
+    plotcurve<-cbind(listcumhaz1[,1], exp(-listcumhaz[,2]))
   }
   
-  cumhazse<-listcumhaz[[i]]
+  cumhazse<-listcumhaz1
   
   if (add) {
     lines(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],...)
   } else {
-    plot(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
+    plot(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlab="Time",...)
   }
   if (se==TRUE) {
     if (!relsurv) {
