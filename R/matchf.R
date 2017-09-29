@@ -591,7 +591,6 @@ excplot.matchpropexc  <- function(x, se=FALSE,
                                   polygon=TRUE,
                                   level=0.95,
                                   stratas=NULL,...) {# {{{
-  browser()
   level <- -qnorm((1-level)/2)
   if(!is.null(x$strata)) {
     listcumhaz<-cumhaz.matchf(x)
