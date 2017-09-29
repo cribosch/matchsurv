@@ -595,7 +595,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   level <- -qnorm((1-level)/2)
   if(!is.null(x$strata)) {
     listcumhaz<-cumhaz.matchf(x)
-    rr <- range(do.call("rbind",cumhaz)[,2])
+    rr <- range(do.call("rbind",listcumhaz)[,2])
     liststrata<-lapply(levels(x$strata), function(l) x$strata[x$strata==l])
     strat <- NULL
     for (i in 1:x$nstrata){
