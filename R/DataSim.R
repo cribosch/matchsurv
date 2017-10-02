@@ -68,8 +68,6 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
                           
 }
 
-###} dataset.sim
-
 
 ### This is another function to simulate data based on pc.hazard function of timereg package. It is possible to simulate
 ### also cometing risk data. It is not possible to define the hazard. 
@@ -81,7 +79,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ##' @param nullmod if TRUE no covariates are simulated
 ##' @author Cristina Boschini
 ##' @export
-ExampleSim <- function(nca, #number of cases
+ data.sim<- function(nca, #number of cases
                        ncont, #number of controls
                        competing=FALSE, #with a competing event
                        nullmod=FALSE){
@@ -175,5 +173,6 @@ ExampleSim <- function(nca, #number of cases
     )
   }
   return(dd)
-}
+} 
+###} dataset.sim
 
