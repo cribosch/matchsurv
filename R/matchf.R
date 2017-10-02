@@ -607,8 +607,13 @@ predict.matchpropexc <- function(object,
 ##' @param relsurv set to FALSE. If TRUE relative survival curves are plotted.
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina 
-##' @export
-
+##' @examples 
+##' excplot(m, se=TRUE, col=c("green","blue")) #with condifence intervals
+##' excplot(m, se=TRUE, time=seq(0,30,1)) #at specific time-points
+##' excplot(m, se=TRUE, relsurv=TRUE) #plot the relative survival
+##' excplot(m, se=TRUE, polygon=FALSE) #No polygon
+##' excplot(m, se=FALSE) #no confidence interval
+##' excplot(m, se=TRUE, stratas=1) #plot the second strata
 ##' @export
 excplot  <- function(x, se=FALSE,
                                   time=NULL, add=FALSE,
