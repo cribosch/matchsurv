@@ -70,3 +70,109 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 
 ###} dataset.sim
 
+
+### This is another function to simulate data based on pc.hazard function of timereg package. It is possible to simulate
+### also cometing risk data. It is not possible to define the hazard. 
+####{{{ matchpropexc
+##' Excess risk paired survival model
+##' @param nca number of exposed individuals
+##' @param ncont number of unexposed individuals for eac exposed (fixed number)
+##' @param competing if TRUE a competing cause is considered
+##' @param nullmod if TRUE no covariates are simulated
+##' @author Cristina Boschini
+ExampleSim <- function(nca, #number of cases
+                       ncont, #number of controls
+                       competing=FALSE, #with a competing event
+                       nullmod=FALSE){
+
+  n <- nca
+  
+  ### covariates
+  x <- rbinom(n,1,0.6)
+  sa <- 7
+  entry <- alder <- (runif(n)*sa)*(x==1)+ (x==0)*((8+runif(n)*(sa+5)))
+  #other covariates
+  if(!nullmod) {
+    z <- rbinom(n,2,0.5)
+    cc <- rnorm(n,65,4)
+  }
+  
+  ## background hazards
+  haz1 <- 0.07/40  #first 50 years: 0.023, other 4 years is 0.154
+  haz2 <- 0.3/80
+  ## back 1
+  back1 <- rbind(c(0,0),c(40,40*haz1), c(80,haz1*40+40*haz2))
+  ## back 2
+  if (competing)  back2 <- rbind(c(0,0),c(40,0.25), c(80,0.35)) #hazard of the other cause
+  
+  # time/status for cause 1
+  cont1 <- lapply(1:ncont, function(y) {
+    data.frame(pc.hazard(back1,n,entry=entry),  #time for unexposed with background=1
+               j=y+1,
+               id=1:n,
+               expo=0)
+  }
+  )
+  
+  cont1 <- do.call("rbind", cont1)
+  cont1$codur= cont1$time-cont1$entry
+  cont1$costatus <- cont1$status
+  
+  
+  if (competing) {
+    
+    contcomp <- lapply(1:ncont, function(y) {
+      data.frame(pc.hazard(back2, n, entry=entry))
+    }
+    )
+    
+    contcomp <- do.call("rbind", contcomp)
+    
+    agee <- pmin(cont1$time, contcomp$time) 
+    cont1$costatus <- ifelse(cont1$time<contcomp$time, cont1$status, 2*contcomp$status)
+    cont1$codur <- agee-entry
+    cont1$agestop <- agee
+  }
+  
+  ## exposed
+  excess1 <- rbind(c(0,0),c(5,0.20), c(40,0.30))
+  case11 <- pc.hazard(back1,n,entry=entry)
+  if(!nullmod){
+    rr <- exp(z*0.4)
+    case12 <- pc.hazard(excess1,rr)
+  } else case12 <- pc.hazard(excess1,n)
+  
+  case11$dur <- case11$time-case11$entry
+  case11$dur  <- pmin(case11$dur,case12$time) 
+  case11$status <- ifelse(case11$dur<case12$time,case11$status,case12$status)
+  case11$id <- 1:n
+  case11$j <- 1
+  case11$expo <- 1
+  
+  if (competing) {
+    excess2 <-t(c(1,0.8)*t(excess1))
+    if(!nullmod) {
+      rr <- exp(z*0.25)
+      case22 <- pc.hazard(excess2,rr)
+    } else  case22 <- pc.hazard(excess2,n)
+    case11$status <- ifelse(case11$dur<case22$time, case11$status, 2*case22$status)
+    case11$dur <- pmin(case11$dur, case22$time)
+  }
+  
+  ## complete dataset
+  dd <- data.frame(time=c(cont1$codur,case11$dur),
+                   status=c(cont1$costatus, case11$status),
+                   expo=c(cont1$expo, case11$expo),
+                   id=c(cont1$id, case11$id),
+                   j=c(cont1$j, case11$j)
+  )
+  if (!nullmod) {
+    dd <- data.frame(dd,
+                     x=c(rep(x,ncont+1)),
+                     z=c(rep(z,ncont+1)),
+                     cc=c(rep(cc,ncont+1))
+    )
+  }
+  return(dd)
+}
+
