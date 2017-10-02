@@ -92,7 +92,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   entry <- alder <- (runif(n)*sa)*(x==1)+ (x==0)*((8+runif(n)*(sa+5)))
   #other covariates
   if(!nullmod) {
-    z <- rbinom(n,2,0.5)
+    z <- rbinom(n,1,0.8)
     cc <- rnorm(n,65,4)
   }
   
@@ -137,7 +137,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   excess1 <- rbind(c(0,0),c(5,0.20), c(40,0.30))
   case11 <- pc.hazard(back1,n,entry=entry)
   if(!nullmod){
-    rr <- exp(z*0.4)
+    rr <- exp(z*0.5)
     case12 <- pc.hazard(excess1,rr)
   } else case12 <- pc.hazard(excess1,n)
   
