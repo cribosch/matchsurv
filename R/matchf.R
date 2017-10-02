@@ -591,6 +591,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   level <- -qnorm((1-level)/2)
   ## all strata
   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
+  if (!is.null(stratas) & !any(stratas %in% 0:(x$nstrata-1))) stop("The selected strata doesn't exist\n")
   
   ltys <- lty
   cols <- col
