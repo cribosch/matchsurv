@@ -80,6 +80,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ##' @param competing if TRUE a competing cause is considered
 ##' @param nullmod if TRUE no covariates are simulated
 ##' @author Cristina Boschini
+##' @export
 ExampleSim <- function(nca, #number of cases
                        ncont, #number of controls
                        competing=FALSE, #with a competing event
