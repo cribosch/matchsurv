@@ -72,7 +72,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ### This is another function to simulate data based on pc.hazard function of timereg package. It is possible to simulate
 ### also cometing risk data. It is not possible to define the hazard. 
 ####{{{ matchpropexc
-##' Excess risk paired survival model
+##' Function to simulate macthed survival data
 ##' @param nca number of exposed individuals
 ##' @param ncont number of unexposed individuals for eac exposed (fixed number)
 ##' @param competing if TRUE a competing cause is considered
