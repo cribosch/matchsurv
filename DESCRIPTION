@@ -1,10 +1,10 @@
 Package: matchsurv
 Type: Package
-Title: What the Package Does Using Title Case
+Title: Excess risk estimation for matched cohort survival data
 Version: 1.0
 Date: 2017-04-26
 Author: Cristina Boschini
-Maintainer: Your Name <your@email.com>
+Maintainer: Cristina Boschini <crbo@sund.ku.dk>
 Description: More details about what the package does. See
         <http://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file>
         for details on how to write this part.
@@ -12,3 +12,4 @@ License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.10)
 LinkingTo: Rcpp, RcppArmadillo
 Depends: survival, timereg, mets
+RoxygenNote: 6.0.1

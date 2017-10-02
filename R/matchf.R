@@ -1,9 +1,13 @@
 ### {{{ compdata
 ##' Data structured for matchpropexc
-##' @param formula formula with 'Surv' outcome (see \code{coxph}); strata aren't different from other covariates.
+##' @param formula formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()
 ##' @param data data frame
 ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
 ##' @param cluster vector cluster indicator (one cluster for each exposed individual)
+##' @examples 
+##' dd<-data.sim(nca=5000, ncont=5)
+##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
+##' summary(setdd)
 ##' @author Cristina Boschini
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
@@ -220,9 +224,18 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ####{{{ matchpropexc
 ##' Excess risk paired survival model
 ##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables and cluster() to specify the variable cluster
-##' @param data data frame
+##' @param data data frame - already set-up. (see\code{compdata} for modre details)
+##' @param cluster vector case indicator - by default=cluster
 ##' @param idControl vector control indicator - by default=unexp.subj
-##' @param weight vector that counts how many time the exposed had the event before unexposed invdividuals
+##' @param weight vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight
+##' @examples 
+##' dd<-data.sim(nca=5000, ncont=5)
+##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
+##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
+##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=sdd, weight=weight, idControl=unexp.subj, cluster=cluster)
+##' summary(exc.model)
+##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=sdd,weight=weight, idCluster=unexp.subj, cluster=cluster)
+##' summary(exc.model1)
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data, cluster, idControl, weight,...){
@@ -335,7 +348,6 @@ coef.matchpropexc <- function(object,...) {
 ##' @param object model estimated with matchpropexc
 ##' @author Cristina Boschini
 ##' @export
-##' @export
 summary.matchpropexc <- function(object,...){
   cc <- NULL
   if (object$p>0) {
@@ -416,7 +428,7 @@ vcovCH.mc<-function(p, weight, nevent, X, E, S0, sigmaH, hessian){
 
 ### }}} vcovCH.mc
 
-### {{{ cumhaz.matchf
+### {{{ exccumhaz
 
 cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcumhaz=TRUE) {
   if (SEcumhaz) {
@@ -431,8 +443,14 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
   return(chaz)
 }
 
+##' Cumulative baseline excess hazard estimate
+##' @param object model estimated with matchpropexc
+##' @param strata default strata if the model has them. 
+##' @param time specify at which time to compute the estimates
+##' @param SEcumhaz by default set to TRUE. FALSE if you don't want to compute it.
+##' @author Cristina Boschini
 ##' @export
-cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
+exccumhaz<-function(object, strata=object$strata, time=NULL,
                         SEcumhaz=TRUE){
   if (object$p>0) sigmaH <- vcov(object)
   if (is.null(strata)) {
@@ -480,10 +498,10 @@ cumhaz.matchf<-function(object, strata=object$strata, time=NULL,
     return(chaztab)
 }
 
-### }}} cumhaz.matchf
+### }}} cumhaz
 
 
-###{{{ predict with se for baseline
+###{{{ predict 
 
 predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
   if (!ncol(chaztab)==3) warning("no SE for cumhaz")
@@ -512,8 +530,15 @@ predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
   return(chaz)
 }
 
-##' @export 
-predict.matchpropexc <- function(object, data,
+##' Predict cumulative excess hazard or relative survival
+##' @param object model estimated with matchpropexc
+##' @param relsurv set to FALSE. If TRUE relative survival is returned instead of the cumulative baseline hazard
+##' @param time specify at which time to compute the estimates
+##' @param X define specific values for the excess covariates. By default predictworks on the original data.
+##' @param strata default strata if the model has them.
+##' @author Cristina Boschini
+##' @export
+predict.matchpropexc <- function(object, 
                                  relsurv=FALSE,
                                  time=object$exit,
                                  X=object$X,
@@ -543,14 +568,14 @@ predict.matchpropexc <- function(object, data,
     }
     chaz<-c()
     for (i in seq(length(lev))) {
-      chaztab<-cumhaz.matchf(object,time=time[[i]])[[i]]
+      chaztab<-exccumhaz(object,time=time[[i]])[[i]]
       chaz<-c(chaz, list(predictmc(chaztab,
                                    coef(object),
                                    X[[i]],relsurv)))
     }
     names(chaz)<-lev
   } else {
-    chaztab<-cumhaz.matchf(object,time=time)
+    chaztab<-exccumhaz(object,time=time)
     chaz <- predictmc(chaztab,coef(object),X, relsurv)
   }
   return(chaz)
@@ -574,12 +599,13 @@ predict.matchpropexc <- function(object, data,
 ##' @param polygon to get standard error in shaded form
 ##' @param level of standard errors
 ##' @param stratas wich strata to plot (number or vector between 0 and nstrata-1)
+##' @param relsurv set to FALSE. If TRUE relative survival curves are plotted.
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina 
 ##' @export
 
 ##' @export
-excplot.matchpropexc  <- function(x, se=FALSE,
+excplot  <- function(x, se=FALSE,
                                   time=NULL, add=FALSE,
                                   ylim=NULL,
                                   lty=NULL,col=NULL,legend=TRUE,
@@ -621,7 +647,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
   if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
   
-  listcumhaz<-cumhaz.matchf(x, time=time)
+  listcumhaz<-exccumhaz(x, time=time)
   if(!is.null(x$strata)) {
     cumhaz<-do.call("rbind",listcumhaz )
   } else cumhaz<-listcumhaz
@@ -632,7 +658,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   
   if (is.null(ylim)) ylim <- rr
   if (se==TRUE) {
-    if (ncol(cumhaz)<3) stop("cumhaz.matchpropexc must be with SE.cumhaz=TRUE\n"); 
+    if (ncol(cumhaz)<3) stop("exccumhaz must be with SE.cumhaz=TRUE\n"); 
     if (!relsurv) {
       rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
     } else {
@@ -734,7 +760,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
 }# }}} 
 
 ##' @export
-lines.matchpropexc <- function(x,...,add=TRUE) excplot.matchpropexc(x,...,add=add)
+lines.matchpropexc <- function(x,...,add=TRUE) excplot(x,...,add=add)
 
 ###}}} excplot
 
