@@ -573,7 +573,7 @@ predict.matchpropexc <- function(object, data,
 ##' @param ylab to specify ylab 
 ##' @param polygon to get standard error in shaded form
 ##' @param level of standard errors
-##' @param stratas wich strata to plot 
+##' @param stratas wich strata to plot (number or vector between 0 and nstrata-1)
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina 
 ##' @export
@@ -595,6 +595,7 @@ excplot.matchpropexc  <- function(x, se=FALSE,
   ltys <- lty
   cols <- col
   
+
   ## with strata
   if (length(stratas)>0 & x$nstrata>1) { 
     ms <- match(x$strata.name,names(x$model.frame))
@@ -624,7 +625,6 @@ excplot.matchpropexc  <- function(x, se=FALSE,
     cumhaz<-do.call("rbind",listcumhaz )
   } else cumhaz<-listcumhaz
   
-
   if(!relsurv) {
     rr <- range(cumhaz[,2])
   } else rr<-range(exp(-cumhaz[,2]))
@@ -640,15 +640,18 @@ excplot.matchpropexc  <- function(x, se=FALSE,
     ylim <- rrse
   }
 
-
-  i <- 1
+  i<-1  
+  
   if(!is.null(x$strata)) {
-    listcumhaz1<-listcumhaz[[i]]
+    if(length(stratas)>1) {
+      listcumhaz1<-listcumhaz[[i+stratas[1]]]
+    } else listcumhaz1<-listcumhaz[[i+stratas]]
   } else listcumhaz1<-listcumhaz
+  
   if (!relsurv) {
     plotcurve <- listcumhaz1[,1:2]
   } else {
-    plotcurve<-cbind(listcumhaz1[,1], exp(-listcumhaz[,2]))
+    plotcurve<-cbind(listcumhaz1[,1], exp(-listcumhaz1[,2]))
   }
   
   cumhazse<-listcumhaz1
