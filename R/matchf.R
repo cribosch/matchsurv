@@ -9,6 +9,7 @@
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
 ##' summary(setdd)
 ##' @author Cristina Boschini
+##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
   currentOPTs <- options("na.action")
@@ -236,6 +237,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' summary(exc.model)
 ##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=sdd,weight=weight, idCluster=unexp.subj, cluster=cluster)
 ##' summary(exc.model1)
+##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data, cluster, idControl, weight,...){
@@ -323,6 +325,7 @@ sandEst<- function(x,...){
 ##' variance and covariance matrix for the coefficient estimates 
 ##' @param object model estimated with matchpropexc
 ##' @author Cristina Boschini
+##' @return variance and covariance matrix of the coefficient estimates
 ##' @export
 vcov.matchpropexc <- function(object,...){
   res <-  sandEst(object)
@@ -344,9 +347,10 @@ coef.matchpropexc <- function(object,...) {
 
 
 ###{{{ summary
-##' model summary (coefficient estimates, SE estimates and significance level)
+##' model summary 
 ##' @param object model estimated with matchpropexc
 ##' @author Cristina Boschini
+##' @return coefficient estimates, standard error and significance level
 ##' @export
 summary.matchpropexc <- function(object,...){
   cc <- NULL
@@ -449,6 +453,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @param time specify at which time to compute the estimates
 ##' @param SEcumhaz by default set to TRUE. FALSE if you don't want to compute it.
 ##' @author Cristina Boschini
+##' @return cumulative baseline excess hazard estimates. If the model has strata, the returned object will be a list. Estimated are computed at the defined time.
 ##' @export
 exccumhaz<-function(object, strata=object$strata, time=NULL,
                         SEcumhaz=TRUE){
