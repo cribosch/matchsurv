@@ -2,15 +2,18 @@
 % Please edit documentation in R/matchf.R
 \name{summary.matchpropexc}
 \alias{summary.matchpropexc}
-\title{model summary (coefficient estimates, SE estimates and significance level)}
+\title{model summary}
 \usage{
 \method{summary}{matchpropexc}(object, ...)
 }
 \arguments{
 \item{object}{model estimated with matchpropexc}
 }
+\value{
+coefficient estimates, standard error and significance level
+}
 \description{
-model summary (coefficient estimates, SE estimates and significance level)
+model summary
 }
 \author{
 Cristina Boschini

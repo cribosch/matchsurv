@@ -17,6 +17,9 @@ matchpropexc(formula, data, cluster, idControl, weight, ...)
 
 \item{weight}{vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight}
 }
+\value{
+no output. use \code{summary(model)} to view the coefficient estimates.
+}
 \description{
 Excess risk paired survival model
 }

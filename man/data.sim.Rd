@@ -2,7 +2,7 @@
 % Please edit documentation in R/DataSim.R
 \name{data.sim}
 \alias{data.sim}
-\title{Excess risk paired survival model}
+\title{Function to simulate macthed survival data}
 \usage{
 data.sim(nca, ncont, competing = FALSE, nullmod = FALSE)
 }
@@ -13,10 +13,10 @@ data.sim(nca, ncont, competing = FALSE, nullmod = FALSE)
 
 \item{competing}{if TRUE a competing cause is considered}
 
-\item{nullmod}{if TRUE no covariates are simulated}
+\item{nullmod}{if TRUE no covariates are simulated. By default 3 variables are simulated: two binomals and one continuous.}
 }
 \description{
-Excess risk paired survival model
+Function to simulate macthed survival data
 }
 \author{
 Cristina Boschini

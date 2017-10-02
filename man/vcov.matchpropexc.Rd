@@ -9,6 +9,9 @@
 \arguments{
 \item{object}{model estimated with matchpropexc}
 }
+\value{
+variance and covariance matrix of the coefficient estimates
+}
 \description{
 variance and covariance matrix for the coefficient estimates
 }
