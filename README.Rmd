@@ -53,9 +53,7 @@ This is a basic example which shows you how to:
 First you need to set up your data in order to estimate the model
 
 ```{r compdata}
-names(d)
-setd<-compdata(Surv(time, status)~x+z+cc, data=d, idControl = j, cluster=id)
-names(setd)
+example("compdata")
 ```
 
 `strata()` are not needed in here; you'll choose after how to specify your model. It is a good idea to use all the possible covariates at this step. New variables will be created, you'll need them in the following step.
@@ -63,26 +61,17 @@ names(setd)
 Then you can estimate your model:
 
 ```{r modelest}
-m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster, idControl=unexp.subj, weight=weight,data=setd)
+example("matchpropexc")
 ```
 
 ## model results
 
-To visualize the coefficient estimates
-
-```{r summary}
-
-summary(m)
-
-```
+To visualize the coefficient estimates: `summary(model)`
 
 To estimate the cumulative baseline excess hazard:
 
 ```{r cumhaz}
-
-cumhaz <- exccumhaz(m) #it's a list because of strata
-cumhaz <- exccumhaz(m, time=seq(0,30,5)) #you can chose at which time-points to show the estimates
-
+example("exccumhaz")
 ```
 
 To plot the cumulative baseline excess hazard:
@@ -90,12 +79,6 @@ To plot the cumulative baseline excess hazard:
 *Note: if your model has strata, you can chose which strata to plot (option: `stratas=`, followed by the number of the strata, the first one is number 0). You can also decide to show the relative survival (option: `relsurv=TRUE`).*
 
 ```{r plots, fig.height=10, fig.width=8}
-par(mfrow=c(3,2))
-excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
-excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
-excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 
-excplot(m, se=TRUE, polygon=FALSE, main="with CI - no polygon") 
-excplot(m, se=FALSE, main="No CI") 
-excplot(m, se=TRUE, stratas=1, main="plot the second strata") 
+example("excplot")
 ```
 
