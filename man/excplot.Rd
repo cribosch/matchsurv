@@ -45,14 +45,12 @@ Plotting the cumulative baselines excess hazard
 dd<-data.sim(nca=5000, ncont=5)
 setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, cluster=id)
 m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster, idControl=unexp.subj, weight=weight,data=setdd)
-par(mfrow=c(3,2))
 excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 
 excplot(m, se=TRUE, polygon=FALSE, main="with CI - no polygon") 
 excplot(m, se=FALSE, main="No CI") 
 excplot(m, se=TRUE, stratas=1, main="plot the second strata")
-excplot(m, se=TRUE, col=c("green","blue")) #with condifence intervals
 }
 \author{
 Cristina
