@@ -615,7 +615,7 @@ predict.matchpropexc <- function(object,
 ##' @author Cristina 
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, data=d, idControl = j, cluster=id)
+##' setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, cluster=id)
 ##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster, idControl=unexp.subj, weight=weight,data=setdd)
 ##' par(mfrow=c(3,2))
 ##' excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
