@@ -78,7 +78,7 @@ To plot the cumulative baseline excess hazard:
 
 *Note: if your model has strata, you can chose which strata to plot (option: `stratas=`, followed by the number of the strata, the first one is number 0). You can also decide to show the relative survival (option: `relsurv=TRUE`).*
 
-```{r plots, results='hide', fig.show='hide'}
+```{r plots, results='hide', fig.show='hide', eval=FALSE}
 example("excplot")
 ```
 
