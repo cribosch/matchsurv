@@ -52,7 +52,7 @@ This is a basic example which shows you how to:
 
 First you need to set up your data in order to estimate the model
 
-```{r compdata}
+```{r compdata, results='hide'}
 example("compdata")
 ```
 
@@ -60,7 +60,7 @@ example("compdata")
 
 Then you can estimate your model:
 
-```{r modelest}
+```{r modelest, results='hide'}
 example("matchpropexc")
 ```
 
@@ -70,7 +70,7 @@ To visualize the coefficient estimates: `summary(model)`
 
 To estimate the cumulative baseline excess hazard:
 
-```{r cumhaz}
+```{r cumhaz, results='hide'}
 example("exccumhaz")
 ```
 
@@ -78,7 +78,7 @@ To plot the cumulative baseline excess hazard:
 
 *Note: if your model has strata, you can chose which strata to plot (option: `stratas=`, followed by the number of the strata, the first one is number 0). You can also decide to show the relative survival (option: `relsurv=TRUE`).*
 
-```{r plots, fig.height=10, fig.width=8}
+```{r plots, results='hide', fig.show='hide'}
 example("excplot")
 ```
 

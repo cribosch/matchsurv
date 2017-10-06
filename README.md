@@ -38,16 +38,16 @@ Here it is an example of the data:
 d<-data.sim(5000,5)
 head(d,10)
 #>        time status expo id j x z       cc
-#> 1  63.97744      0    0  1 2 0 1 66.08425
-#> 2  61.59965      0    0  2 2 0 1 70.83388
-#> 3  73.17210      0    0  3 2 1 1 62.98222
-#> 4  42.21481      1    0  4 2 0 1 60.85090
-#> 5  74.00916      0    0  5 2 1 1 68.62952
-#> 6  62.52744      0    0  6 2 0 1 66.99557
-#> 7  79.54926      0    0  7 2 1 1 59.73981
-#> 8  20.70074      1    0  8 2 1 1 63.95996
-#> 9  74.89154      0    0  9 2 1 1 63.72914
-#> 10 78.27219      0    0 10 2 1 1 67.20607
+#> 1  69.92595      0    0  1 2 0 1 67.55630
+#> 2  78.60919      0    0  2 2 1 1 63.85052
+#> 3  71.24371      0    0  3 2 0 1 72.25981
+#> 4  73.37731      0    0  4 2 1 0 67.48675
+#> 5  64.35572      0    0  5 2 0 1 60.74941
+#> 6  61.16818      0    0  6 2 0 1 67.77500
+#> 7  45.12128      1    0  7 2 1 1 62.23427
+#> 8  69.05624      0    0  8 2 0 1 70.31280
+#> 9  65.95760      0    0  9 2 0 1 69.41267
+#> 10 55.88557      1    0 10 2 1 1 63.86511
 ```
 
 `matchsurv::data.sim` let you simulate some matched survival data; `competing=TRUE` will let you chose for a competing risk setting; when `nullmod=TRUE` no covariates are simulated.
@@ -62,12 +62,7 @@ This is a basic example which shows you how to:
 First you need to set up your data in order to estimate the model
 
 ``` r
-names(d)
-#> [1] "time"   "status" "expo"   "id"     "j"      "x"      "z"      "cc"
-setd<-compdata(Surv(time, status)~x+z+cc, data=d, idControl = j, cluster=id)
-names(setd)
-#> [1] "exit"       "status"     "cluster"    "unexp.subj" "weight"    
-#> [6] "x"          "z"          "cc"
+example("compdata")
 ```
 
 `strata()` are not needed in here; you'll choose after how to specify your model. It is a good idea to use all the possible covariates at this step. New variables will be created, you'll need them in the following step.
@@ -75,32 +70,18 @@ names(setd)
 Then you can estimate your model:
 
 ``` r
-m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster, idControl=unexp.subj, weight=weight,data=setd)
+example("matchpropexc")
 ```
 
 model results
 -------------
 
-To visualize the coefficient estimates
-
-``` r
-
-summary(m)
-#> 
-#>      n events
-#>   4875    619
-#>  20125   2810
-#> 
-#>            Estimate     S.E. P-value
-#> factor(x)1 0.031365 0.053170  0.5553
-```
+To visualize the coefficient estimates: `summary(model)`
 
 To estimate the cumulative baseline excess hazard:
 
 ``` r
-
-cumhaz <- exccumhaz(m) #it's a list because of strata
-cumhaz <- exccumhaz(m, time=seq(0,30,5)) #you can chose at which time-points to show the estimates
+example("exccumhaz")
 ```
 
 To plot the cumulative baseline excess hazard:
@@ -108,13 +89,5 @@ To plot the cumulative baseline excess hazard:
 *Note: if your model has strata, you can chose which strata to plot (option: `stratas=`, followed by the number of the strata, the first one is number 0). You can also decide to show the relative survival (option: `relsurv=TRUE`).*
 
 ``` r
-par(mfrow=c(3,2))
-excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
-excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
-excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 
-excplot(m, se=TRUE, polygon=FALSE, main="with CI - no polygon") 
-excplot(m, se=FALSE, main="No CI") 
-excplot(m, se=TRUE, stratas=1, main="plot the second strata") 
+example("excplot")
 ```
-
-![](README-plots-1.png)
