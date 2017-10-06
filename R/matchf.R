@@ -235,7 +235,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
 ##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, idControl=unexp.subj, cluster=cluster)
 ##' summary(exc.model)
-##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idCluster=unexp.subj, cluster=cluster)
+##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, cluster=cluster)
 ##' summary(exc.model1)
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini

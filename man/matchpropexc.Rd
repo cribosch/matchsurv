@@ -29,7 +29,7 @@ setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
 names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
 exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, idControl=unexp.subj, cluster=cluster)
 summary(exc.model)
-exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idCluster=unexp.subj, cluster=cluster)
+exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, cluster=cluster)
 summary(exc.model1)
 }
 \author{
