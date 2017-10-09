@@ -5,9 +5,7 @@ Version: 1.0
 Date: 2017-04-26
 Author: Cristina Boschini
 Maintainer: Cristina Boschini <crbo@sund.ku.dk>
-Description: More details about what the package does. See
-        <http://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file>
-        for details on how to write this part.
+Description: The package provides tools to estimate the excess risk for exposed subjects when matched survival data are available.
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.10)
 LinkingTo: Rcpp, RcppArmadillo
