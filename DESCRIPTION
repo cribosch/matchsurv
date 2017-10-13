@@ -1,11 +1,11 @@
 Package: matchsurv
 Type: Package
-Title: Excess risk estimation for matched cohort survival data
+Title: Excess Risk Estimation for Matched Cohort Survival Data
 Version: 1.0
 Date: 2017-04-26
 Author: Cristina Boschini
 Maintainer: Cristina Boschini <crbo@sund.ku.dk>
-Description: The package provides tools to estimate the excess risk for exposed subjects when matched survival data are available.
+Description: tools for estimating the excess risk of exposed subjects when matched survival data are available.
 License: GPL (>= 2)
 Imports: Rcpp (>= 0.12.10)
 LinkingTo: Rcpp, RcppArmadillo
