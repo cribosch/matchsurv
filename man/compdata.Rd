@@ -14,6 +14,8 @@ compdata(formula, data, cluster, idControl, ...)
 \item{cluster}{vector cluster indicator (one cluster for each exposed individual)}
 
 \item{idControl}{vector control indicator (idControl==1 indicates exposed individual in cluster i)}
+
+\item{...}{Additional arguments to lower level funtions}
 }
 \value{
 A setup dataset, ready for \code{matchpropexc}

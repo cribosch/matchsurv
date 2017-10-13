@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{object}{model estimated with matchpropexc}
+
+\item{...}{Additional arguments to lower level funtions}
 }
 \description{
 coefficient estimates

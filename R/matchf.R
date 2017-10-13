@@ -4,6 +4,7 @@
 ##' @param data data frame
 ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
 ##' @param cluster vector cluster indicator (one cluster for each exposed individual)
+##' @param ... Additional arguments to lower level funtions
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
@@ -229,13 +230,16 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @param cluster vector case indicator - by default=cluster
 ##' @param idControl vector control indicator - by default=unexp.subj
 ##' @param weight vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight
+##' @param ... Additional arguments to lower level funtions
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
 ##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, idControl=unexp.subj, cluster=cluster)
+##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, 
+##' idControl=unexp.subj, cluster=cluster)
 ##' summary(exc.model)
-##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, cluster=cluster)
+##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, 
+##' cluster=cluster)
 ##' summary(exc.model1)
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
@@ -324,6 +328,7 @@ sandEst<- function(x,...){
 ###{{{ vcov
 ##' variance and covariance matrix for the coefficient estimates 
 ##' @param object model estimated with matchpropexc
+##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina Boschini
 ##' @return variance and covariance matrix of the coefficient estimates
 ##' @export
@@ -338,6 +343,7 @@ vcov.matchpropexc <- function(object,...){
 ###{{{ coef
 ##' coefficient estimates
 ##' @param object model estimated with matchpropexc
+##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina Boschini
 ##' @export
 coef.matchpropexc <- function(object,...) {
@@ -349,6 +355,7 @@ coef.matchpropexc <- function(object,...) {
 ###{{{ summary
 ##' model summary 
 ##' @param object model estimated with matchpropexc
+##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina Boschini
 ##' @return coefficient estimates, standard error and significance level
 ##' @export
@@ -457,9 +464,11 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, idControl=unexp.subj, cluster=cluster)
+##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, 
+##' idControl=unexp.subj, cluster=cluster)
 ##' cumhaz <- exccumhaz(exc.model) #it's a list because of strata
-##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) #you can chose at which time-points to show the estimates
+##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
+##' #you can chose at which time-points to show the estimates
 ##' @export
 exccumhaz<-function(object, strata=object$strata, time=NULL,
                         SEcumhaz=TRUE){
@@ -547,6 +556,7 @@ predictmc<- function(chaztab, beta,X=NULL,relsurv=FALSE,...){
 ##' @param time specify at which time to compute the estimates
 ##' @param X define specific values for the excess covariates. By default predictworks on the original data.
 ##' @param strata default strata if the model has them.
+##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina Boschini
 ##' @export
 predict.matchpropexc <- function(object, 
@@ -616,7 +626,8 @@ predict.matchpropexc <- function(object,
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, cluster=id)
-##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster, idControl=unexp.subj, weight=weight,data=setdd)
+##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster,
+##'  idControl=unexp.subj, weight=weight,data=setdd)
 ##' excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 ##' excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 ##' excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 
@@ -818,4 +829,7 @@ lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
 
+#' @importFrom grDevices col2rgb rgb
+#' @importFrom graphics lines plot
+#' @importFrom stats coef model.extract model.matrix pnorm predict printCoefmat qnorm rbinom rexp rnorm runif terms vcov
 

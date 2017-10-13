@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{object}{model estimated with matchpropexc}
+
+\item{...}{Additional arguments to lower level funtions}
 }
 \value{
 variance and covariance matrix of the coefficient estimates

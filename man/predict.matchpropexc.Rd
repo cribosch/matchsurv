@@ -17,6 +17,8 @@
 \item{X}{define specific values for the excess covariates. By default predictworks on the original data.}
 
 \item{strata}{default strata if the model has them.}
+
+\item{...}{Additional arguments to lower level funtions}
 }
 \description{
 Predict cumulative excess hazard or relative survival
