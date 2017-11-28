@@ -686,7 +686,7 @@ excplot  <- function(x, se=FALSE,
     rr <- range(cumhaz[,2])
   } else rr<-range(exp(-cumhaz[,2]))
   
-  if (is.null(ylim)) ylim <- rr
+
   if (se==TRUE) {
     if (ncol(cumhaz)<3) stop("exccumhaz must be with SE.cumhaz=TRUE\n"); 
     if (!relsurv) {
@@ -694,8 +694,13 @@ excplot  <- function(x, se=FALSE,
     } else {
       rrse <- range(c(exp(-(cumhaz[,2]-level*cumhaz[,3]))))
     }
-    ylim <- rrse
   }
+  
+  if (is.null(ylim)) {
+    if (se==TRUE) {
+      ylim <- rrse
+    } else ylim<-rr
+    
 
   i<-1  
   
