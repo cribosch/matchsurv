@@ -702,6 +702,7 @@ excplot  <- function(x, se=FALSE,
     if (se==TRUE) {
       ylim <- rrse
     } else ylim<-rr
+  }
     
 
   i<-1  
