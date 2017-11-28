@@ -692,7 +692,7 @@ excplot  <- function(x, se=FALSE,
     if (!relsurv) {
       rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
     } else {
-      rrse <- range(c(exp(-(cumhaz[,2]+level*cumhaz[,3]))))
+      rrse <- range(c(exp(-(cumhaz[,2]-level*cumhaz[,3]))))
     }
     ylim <- rrse
   }
