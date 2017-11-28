@@ -683,16 +683,18 @@ excplot  <- function(x, se=FALSE,
   } else cumhaz<-listcumhaz
   
   if(!relsurv) {
-    rr <- range(cumhaz[,2])
-  } else rr<-range(exp(-cumhaz[,2]))
+    rr <- range(c(0,cumhaz[,2]))
+  } else rr<-range(c(0,exp(-cumhaz[,2])))
   
 
   if (se==TRUE) {
     if (ncol(cumhaz)<3) stop("exccumhaz must be with SE.cumhaz=TRUE\n"); 
     if (!relsurv) {
-      rrse <- range(c(cumhaz[,2]+level*cumhaz[,3]))
+      rrse <- range(c(0,cumhaz[,2]+level*cumhaz[,3],
+                      cumhaz[,2]-level*cumhaz[,3]))
     } else {
-      rrse <- range(c(exp(-(cumhaz[,2]-level*cumhaz[,3]))))
+      rrse <- range(c(0,exp(-(cumhaz[,2]-level*cumhaz[,3])),
+                      exp(-(cumhaz[,2]+level*cumhaz[,3]))))
     }
   }
   
