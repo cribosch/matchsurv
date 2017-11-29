@@ -644,7 +644,6 @@ excplot  <- function(x, se=FALSE,
                                   level=0.95,
                                   stratas=NULL,
                                   relsurv=FALSE,...) {# {{{
-  browser()
   level <- -qnorm((1-level)/2)
   ## all strata
   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
@@ -807,7 +806,6 @@ lines.matchpropexc <- function(x,...,add=TRUE) excplot(x,...,add=add)
 
 ##' @export
 plot.matchpropexc  <- function(x,relsurv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
-  browser()
   if (!is.null(X) && nrow(X)>1) {
     P <- lapply(split(X,seq(nrow(X))),function(xx) predict(x,X=xx,time=time,surv=surv))
   } else {
