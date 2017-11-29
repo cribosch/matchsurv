@@ -644,6 +644,7 @@ excplot  <- function(x, se=FALSE,
                                   level=0.95,
                                   stratas=NULL,
                                   relsurv=FALSE,...) {# {{{
+  browser()
   level <- -qnorm((1-level)/2)
   ## all strata
   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
@@ -753,14 +754,13 @@ excplot  <- function(x, se=FALSE,
   }
   
   if (length(stratas)>1)  {
-    browser()
-    for (i in stratas+1) {
+    for (i in 2:length(stratas)){
       if (!relsurv) {
-        plotcurve <- listcumhaz[[i]][,1:2]
+        plotcurve <- listcumhaz[[stratas[i]+1]][,1:2]
       } else {
-        plotcurve<-cbind(listcumhaz[[i]][,1], exp(-listcumhaz[[i]][,2]))
+        plotcurve<-cbind(listcumhaz[[stratas[i]+1]][,1], exp(-listcumhaz[[stratas[i]+1]][,2]))
       }
-      cumhazse<-listcumhaz[[i]]
+      cumhazse<-listcumhaz[[stratas[i]+1]]
       lines(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1])   
       if (se==TRUE) {
         if (!relsurv) {
