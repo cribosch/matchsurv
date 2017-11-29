@@ -13,6 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
+  browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   cl <- match.call()
@@ -87,7 +88,7 @@ compdata<-function(formula, data, cluster, idControl,...){
       colnames(Xcases)<-colnames(X)
       d3 <- data.frame(d3,Xcases, check.names=FALSE)
     }
-    d3<-d3[d3$start<=d3$end,]
+    d3<-d3[d3$entry<=d3$exit,]
   } else {
     
     wp <- mets::familyclusterWithProbands.index(cluster,idControl,Rindex=1)
