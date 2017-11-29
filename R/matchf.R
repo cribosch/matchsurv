@@ -753,7 +753,8 @@ excplot  <- function(x, se=FALSE,
   }
   
   if (length(stratas)>1)  {
-    for (i in 2:length(stratas)) {
+    browser()
+    for (i in stratas+1) {
       if (!relsurv) {
         plotcurve <- listcumhaz[[i]][,1:2]
       } else {
