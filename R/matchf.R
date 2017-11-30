@@ -796,10 +796,7 @@ excplot  <- function(x, se=FALSE,
       abline(h=0)
     } else abline(h=1)
   }
-}
-  
-  
-  
+
 }# }}} 
 
 ##' @export
