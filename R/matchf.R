@@ -840,6 +840,8 @@ lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
 ###}}} plot
 
 #' @importFrom grDevices col2rgb rgb
-#' @importFrom graphics lines plot
+#' @importFrom graphics lines plot abline
 #' @importFrom stats coef model.extract model.matrix pnorm predict printCoefmat qnorm rbinom rexp rnorm runif terms vcov
+#' @importFrom survival surv
+
 
