@@ -636,14 +636,11 @@ predict.matchpropexc <- function(object,
 ##' excplot(m, se=TRUE, stratas=1, main="plot the second strata")
 ##' @export
 excplot  <- function(x, se=FALSE,
-                                  time=NULL, add=FALSE,
-                                  ylim=NULL,
-                                  lty=NULL,col=NULL,legend=TRUE,
-                                  ylab="Baseline cumulative excess hazard",
-                                  polygon=TRUE,
-                                  level=0.95,
-                                  stratas=NULL,
-                                  relsurv=FALSE,...) {# {{{
+                     time=NULL, add=FALSE,
+                     ylim=NULL, lty=NULL,col=NULL,
+                     legend=TRUE,ylab="Baseline cumulative excess hazard",
+                     polygon=TRUE,level=0.95,stratas=NULL,
+                     relsurv=FALSE,hline=TRUE,...) {# {{{
   level <- -qnorm((1-level)/2)
   ## all strata
   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
@@ -724,7 +721,7 @@ excplot  <- function(x, se=FALSE,
   if (add) {
     lines(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],...)
   } else {
-    plot(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlab="Time",...)
+    plot(plotcurve,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
   }
   if (se==TRUE) {
     if (!relsurv) {
@@ -793,6 +790,14 @@ excplot  <- function(x, se=FALSE,
     if(!relsurv) {
       legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1], bty="n")
     } else legend("bottomleft",legend=stratnames,col=cols[,1],lty=ltys[,1], bty="n")
+  
+  if (hline) {
+    if(!relsurv) {
+      abline(h=0)
+    } else abline(h=1)
+  }
+}
+  
   
   
 }# }}} 
