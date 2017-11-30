@@ -621,6 +621,7 @@ predict.matchpropexc <- function(object,
 ##' @param level of standard errors
 ##' @param stratas wich strata to plot (number or vector between 0 and nstrata-1)
 ##' @param relsurv set to FALSE. If TRUE relative survival curves are plotted.
+##' @param hline set to TRUE. An horizontal line is plotted (1 if relative survival, 0 if excess risk)
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina 
 ##' @examples 

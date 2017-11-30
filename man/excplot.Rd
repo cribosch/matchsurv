@@ -7,7 +7,7 @@
 excplot(x, se = FALSE, time = NULL, add = FALSE, ylim = NULL,
   lty = NULL, col = NULL, legend = TRUE,
   ylab = "Baseline cumulative excess hazard", polygon = TRUE,
-  level = 0.95, stratas = NULL, relsurv = FALSE, ...)
+  level = 0.95, stratas = NULL, relsurv = FALSE, hline = TRUE, ...)
 }
 \arguments{
 \item{x}{matchpropexc object}
@@ -35,6 +35,8 @@ excplot(x, se = FALSE, time = NULL, add = FALSE, ylim = NULL,
 \item{stratas}{wich strata to plot (number or vector between 0 and nstrata-1)}
 
 \item{relsurv}{set to FALSE. If TRUE relative survival curves are plotted.}
+
+\item{hline}{set to TRUE. An horizontal line is plotted (1 if relative survival, 0 if excess risk)}
 
 \item{...}{Additional arguments to lower level funtions}
 }
