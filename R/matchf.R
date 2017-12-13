@@ -33,6 +33,14 @@ compdata<-function(formula, data, cluster, idControl,...){
     exit <- Y[,2]
     status <- Y[,3]
     Truncation <- TRUE
+    if (sum(is.na(entry))>0) {
+      entryna<-entry
+      exitna<-exit
+      entryna[is.na(entry)]<-exit[is.na(entry)]
+      exitna[is.na(entry)]<-(exit[is.na(entry)]+(0.5/365.25))
+      entry<-entryna
+      exit<-exitna
+    }
   }
   # cluster <- NULL
   # if (!is.null(attributes(Terms)$specials$cluster)){
