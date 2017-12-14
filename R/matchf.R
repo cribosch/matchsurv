@@ -20,7 +20,7 @@ compdata<-function(formula, data, cluster, idControl,...){
   Terms <- terms(formula,data=data, idControl=idControl, cluster=cluster)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
+  m <- suppressWarnings(eval(m, parent.frame()))
   Y <- model.extract(m,"response")
   if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
   if (ncol(Y)==2) {
@@ -34,10 +34,11 @@ compdata<-function(formula, data, cluster, idControl,...){
     status <- Y[,3]
     Truncation <- TRUE
     if (sum(is.na(entry))>0) {
+      warnings("Time to event might be null")
       entryna<-entry
       exitna<-exit
       entryna[is.na(entry)]<-exit[is.na(entry)]
-      exitna[is.na(entry)]<-(exit[is.na(entry)]+(0.5/365.25))
+      exitna[is.na(entry)]<-(exit[is.na(entry)]+runif(1,0,0.002))
       entry<-entryna
       exit<-exitna
     }
