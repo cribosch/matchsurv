@@ -34,7 +34,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     status <- Y[,3]
     Truncation <- TRUE
     if (sum(is.na(entry))>0) {
-      warnings("Time to event might be null")
+      warning("Time to event might be null")
       entryna<-entry
       exitna<-exit
       entryna[is.na(entry)]<-exit[is.na(entry)]
