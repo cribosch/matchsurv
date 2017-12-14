@@ -13,6 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
+  browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   cl <- match.call()
@@ -34,7 +35,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     status <- Y[,3]
     Truncation <- TRUE
     if (sum(is.na(entry))>0) {
-      warning("Time to event might be null")
+      warning("Time to event might be null\n")
       entryna<-entry
       exitna<-exit
       entryna[is.na(entry)]<-exit[is.na(entry)]
@@ -54,11 +55,9 @@ compdata<-function(formula, data, cluster, idControl,...){
   cluster<-model.extract(m,"cluster")
   names(cluster)<- NULL
   
-  X <- model.matrix(Terms, m)
+  X <- data[, attributes(Terms)$term.labels]
   options(na.action = currentOPTs$na.action)
   
-  if (!is.null(intpos <- attributes(Terms)$intercept))
-    X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
   p<-ncol(X)
   if(!is.null(colnames(X))) namesX<-colnames(X)
