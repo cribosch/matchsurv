@@ -231,7 +231,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 
 ####{{{ matchpropexc
 ##' Excess risk paired survival model
-##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables and cluster() to specify the variable cluster
+##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables
 ##' @param data data frame - already set-up. (see\code{compdata} for modre details)
 ##' @param cluster vector case indicator - by default=cluster
 ##' @param idControl vector control indicator - by default=unexp.subj
@@ -241,21 +241,14 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
 ##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, 
-##' idControl=unexp.subj, cluster=cluster)
+##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
 ##' summary(exc.model)
-##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, 
-##' cluster=cluster)
+##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd)
 ##' summary(exc.model1)
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data,...){
-                         #, cluster=cluster, idControl=unexp.subj, weight=weight,...){
-  # if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
-  # if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
-  # if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
-  browser()
   cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:3]
   special <- c("strata")
@@ -290,9 +283,9 @@ matchpropexc <- function(formula, data,...){
   #   cluster <- m[[ts$vars]]
   # }
   
-  cluster<-data[,"cluster"]
-  idControl<-data[, "unexp.subj"]
-  weight<-data[, "weight"]
+  # cluster<-data[,"cluster"]
+  # idControl<-data[, "unexp.subj"]
+  # weight<-data[, "weight"]
   
   X <- model.matrix(Terms, m)
   if (!is.null(intpos <- attributes(Terms)$intercept))
