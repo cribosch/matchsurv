@@ -250,15 +250,16 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
 ##' @export
-matchpropexc <- function(formula, data, cluster=cluster, idControl=unexp.subj, weight=weight,...){
+matchpropexc <- function(formula, data,...){
+                         #, cluster=cluster, idControl=unexp.subj, weight=weight,...){
   # if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
   # if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
   # if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
   browser()
   cl <- match.call()
-  m <- match.call(expand.dots=TRUE)[1:6]
+  m <- match.call(expand.dots=TRUE)[1:3]
   special <- c("strata")
-  Terms <- terms(formula,special,data=data, idControl=idControl, cluster=cluster, weight=weight)
+  Terms <- terms(formula,special,data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
   m <- eval(m, parent.frame())
@@ -289,12 +290,9 @@ matchpropexc <- function(formula, data, cluster=cluster, idControl=unexp.subj, w
   #   cluster <- m[[ts$vars]]
   # }
   
-  cluster<-model.extract(m,"cluster")
-  names(cluster)<- NULL
-  idControl<-model.extract(m,"idControl")
-  names(idControl)<- NULL
-  weight<-model.extract(m,"weight")
-  names(weight)<- NULL
+  cluster<-data[,"cluster"]
+  idControl<-data[, "unexp.subj"]
+  weight<-data[, "weight"]
   
   X <- model.matrix(Terms, m)
   if (!is.null(intpos <- attributes(Terms)$intercept))
