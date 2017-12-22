@@ -15,7 +15,6 @@
 compdata<-function(formula, data, cluster, idControl,...){
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
-  cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:5]
   Terms <- terms(formula,data=data, idControl=idControl, cluster=cluster)
   m$formula <- Terms
@@ -255,7 +254,7 @@ matchpropexc <- function(formula, data, cluster=cluster, idControl=unexp.subj, w
   # if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
   # if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
   # if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
-  
+  browser()
   cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:6]
   special <- c("strata")
