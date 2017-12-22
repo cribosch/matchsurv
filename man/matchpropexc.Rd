@@ -4,20 +4,20 @@
 \alias{matchpropexc}
 \title{Excess risk paired survival model}
 \usage{
-matchpropexc(formula, data, cluster, idControl, weight, ...)
+matchpropexc(formula, data, ...)
 }
 \arguments{
-\item{formula}{formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables and cluster() to specify the variable cluster}
+\item{formula}{formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables}
 
 \item{data}{data frame - already set-up. (see\code{compdata} for modre details)}
+
+\item{...}{Additional arguments to lower level funtions}
 
 \item{cluster}{vector case indicator - by default=cluster}
 
 \item{idControl}{vector control indicator - by default=unexp.subj}
 
 \item{weight}{vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight}
-
-\item{...}{Additional arguments to lower level funtions}
 }
 \value{
 no output. use \code{summary(model)} to view the coefficient estimates.
@@ -29,11 +29,9 @@ Excess risk paired survival model
 dd<-data.sim(nca=5000, ncont=5)
 setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
 names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, 
-idControl=unexp.subj, cluster=cluster)
+exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
 summary(exc.model)
-exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd,weight=weight, idControl=unexp.subj, 
-cluster=cluster)
+exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd)
 summary(exc.model1)
 }
 \author{
