@@ -13,7 +13,6 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
-  browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   cl <- match.call()
@@ -253,9 +252,9 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data, cluster=cluster, idControl=unexp.subj, weight=weight,...){
-  if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
-  if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
-  if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
+  # if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
+  # if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
+  # if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
   
   cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:6]
