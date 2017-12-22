@@ -285,7 +285,7 @@ matchpropexc <- function(formula, data,...){
   
   # cluster<-data[,"cluster"]
   # idControl<-data[, "unexp.subj"]
-  # weight<-data[, "weight"]
+  weight<-data[, "weight"]
   
   X <- model.matrix(Terms, m)
   if (!is.null(intpos <- attributes(Terms)$intercept))
