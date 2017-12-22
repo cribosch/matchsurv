@@ -122,7 +122,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     colnames(d3)<- c("exit","status","cluster","unexp.subj","weight")
     
     if (ncol(X)>0) {
-      Xcases <- as.matrix(X[wp$pairs[,2],], ncol=ncol(X))
+      Xcases <- X[wp$pairs[,2],]
       colnames(Xcases)<-colnames(X)
       d3 <- data.frame(d3,Xcases, check.names=FALSE)
     }
