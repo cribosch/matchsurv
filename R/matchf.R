@@ -233,9 +233,6 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' Excess risk paired survival model
 ##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables
 ##' @param data data frame - already set-up. (see\code{compdata} for modre details)
-##' @param cluster vector case indicator - by default=cluster
-##' @param idControl vector control indicator - by default=unexp.subj
-##' @param weight vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight
 ##' @param ... Additional arguments to lower level funtions
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
@@ -461,8 +458,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd, weight=weight, 
-##' idControl=unexp.subj, cluster=cluster)
+##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
 ##' cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 ##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 ##' #you can chose at which time-points to show the estimates
@@ -624,8 +620,7 @@ predict.matchpropexc <- function(object,
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, cluster=id)
-##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),cluster=cluster,
-##'  idControl=unexp.subj, weight=weight,data=setdd)
+##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),data=setdd)
 ##' excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 ##' excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 ##' excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 

@@ -12,12 +12,6 @@ matchpropexc(formula, data, ...)
 \item{data}{data frame - already set-up. (see\code{compdata} for modre details)}
 
 \item{...}{Additional arguments to lower level funtions}
-
-\item{cluster}{vector case indicator - by default=cluster}
-
-\item{idControl}{vector control indicator - by default=unexp.subj}
-
-\item{weight}{vector that counts how many time the exposed had the event before unexposed invdividuals - by default weight}
 }
 \value{
 no output. use \code{summary(model)} to view the coefficient estimates.
