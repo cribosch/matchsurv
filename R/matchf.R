@@ -252,7 +252,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
 ##' @export
-matchpropexc <- function(formula, data, cluster, idControl, weight,...){
+matchpropexc <- function(formula, data, cluster=cluster, idControl=unexp.subj, weight=weight,...){
   if (missing(cluster)) stop("cluster vector needed - use cluster in compdata results")
   if (missing(idControl)) stop("idControl vector needed - use unexp.subj in compdata results")
   if (missing(weight)) stop("cluster weight needed - use weight in compdata results")
