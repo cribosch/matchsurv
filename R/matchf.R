@@ -13,6 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
+  #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call(expand.dots=TRUE)[1:5]
@@ -53,7 +54,7 @@ compdata<-function(formula, data, cluster, idControl,...){
   cluster<-model.extract(m,"cluster")
   names(cluster)<- NULL
   
-  X <- data[, attributes(Terms)$term.labels]
+  X <- data[, attributes(Terms)$term.labels, drop=FALSE]
   options(na.action = currentOPTs$na.action)
   
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
@@ -120,7 +121,7 @@ compdata<-function(formula, data, cluster, idControl,...){
     colnames(d3)<- c("exit","status","cluster","unexp.subj","weight")
     
     if (ncol(X)>0) {
-      Xcases <- X[wp$pairs[,2],]
+      Xcases <- X[wp$pairs[,2],,drop=FALSE]
       colnames(Xcases)<-colnames(X)
       d3 <- data.frame(d3,Xcases, check.names=FALSE)
     }
