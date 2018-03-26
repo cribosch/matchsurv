@@ -4,6 +4,18 @@
 ### incidence function in a matched cohort.
 ### It is similar to compdata but for CIF
 
+### {{{ compcomp
+##' Data structured for glm approach in competing risk setting
+##' @param formula formula with 'Event' outcome (see \code{timereg} package); time stands for the start time, while time2 stands for the stop time. cause=1 will be considered as the event of interest
+##' @param data data frame
+##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
+##' @param cluster vector cluster indicator (one cluster for each exposed individual)
+##' @param strata 
+##' @param time.points vector of time points where the glm will be estimated (10 usually is a sufficient number; the more time points, the slower the glm function)
+##' @param cens.formula useful to estimate the weights when censoring is present. no quotes, add something like ~age+year
+##' @author Cristina Boschini
+##' @return A setup dataset, ready for \code{geese}
+##' @export
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                    time.points,cens.formula=NULL, cens.code=0){
   #browser()
@@ -154,8 +166,9 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
   setDT(mm)
   return(mm)
 } 
+###}}} compdata
 
-    
+###{{{ prep.match.comp.risk
 prep.match.comp.risk<-function (data, times = NULL,
                                 eentrytime = NULL, uentrytime=NULL,
                                 eexittime = "eexit", uexittime="uexit", 
@@ -316,6 +329,8 @@ prep.match.comp.risk<-function (data, times = NULL,
   attr(out, "cens.model") <- cens.model
   return(out)
 }
+
+###}}} prep.match.comp.risk
 
 
 
