@@ -6,7 +6,7 @@
 ##' @docType package
 ##' @author Cristina Boschini
 ##' @useDynLib matchsurv
-##' @import stats timereg Rcpp lava mets
+##' @import stats timereg Rcpp lava mets data.table
 ##' @importFrom survival Surv is.Surv
 ##' @importFrom graphics lines plot polygon 
 ##' @importFrom grDevices col2rgb rgb
