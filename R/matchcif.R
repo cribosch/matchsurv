@@ -10,15 +10,16 @@
 ##' @param data data frame
 ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in cluster i)
 ##' @param cluster vector cluster indicator (one cluster for each exposed individual)
-##' @param strata 
+##' @param strata weights computed according to strata
 ##' @param time.points vector of time points where the glm will be estimated (10 usually is a sufficient number; the more time points, the slower the glm function)
 ##' @param cens.formula useful to estimate the weights when censoring is present. no quotes, add something like ~age+year
+##' @param cens.code default is 0
 ##' @author Cristina Boschini
 ##' @return A setup dataset, ready for \code{geese}
 ##' @export
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                    time.points,cens.formula=NULL, cens.code=0){
-  browser()
+  #browser()
   #currentOPTs <- options("na.action")
   #options(na.action = "na.pass")
   m <- match.call()[1:5]
@@ -124,7 +125,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
   time.points<-matrix(time.points, ncol=1)
   #for (h in time.points) {
     if (Truncation) {
-      mm<-adply(time.points,1, function(x) { 
+      mm<-plyr::adply(time.points,1, function(x) { 
         i2out <- prep.match.comp.risk(d3,times = x,
                                       eentrytime = "eentry" , uentrytime="uentry",
                                       eexittime = "eexit", uexittime="uexit", 
@@ -137,7 +138,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
         return(i2out)
         },.id = NULL)
     } else {
-      mm<-adply(time.points,1, function(x) { 
+      mm<-plyr::adply(time.points,1, function(x) { 
       i2out <- prep.match.comp.risk(d3,times = x,
                                     eentrytime = NULL, uentrytime=NULL,
                                     eexittime = "eexit", uexittime="uexit", 
@@ -201,7 +202,7 @@ prep.match.comp.risk<-function (data, times = NULL,
   trunc.model <- cens.model <- NULL
   out[, pexittime:=pmin(get(eexittime), get(uexittime))]
   out[, pcause:=ifelse(pexittime==get(eexittime),ecause,ucause)]
-  
+  out[eentrytime==pexittime, pexittime:=pexittime+runif(1,0,0.002)] #I don't know if it is a valid solution. check it!
   #browser()
   if (is.null(cens.formula)) {
     if (is.null(strata)) {

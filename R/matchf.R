@@ -133,6 +133,7 @@ compdata<-function(formula, data, cluster, idControl,...){
 ###}}} compdata
 
 ###{{{ matchpropexc0
+##' @useDynLib matchsurv
 matchpropexc0 <- function(X,entry, exit, status, weight,
                           strata=NULL, beta,stderr=TRUE,
                           strata.name=NULL,...){
@@ -150,12 +151,12 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
       .Call("prep",
             entry[ii], exit[ii], status[ii], weight[ii],
             as.matrix(X)[ii,,drop=FALSE],sum(entry[ii])!=0,
-            package="matchsurv"))
+            PACKAGE ="matchsurv"))
     
     obj <- function(pp, U=FALSE, all=FALSE) {
       val <- lapply(dd, function (d)
         with(d,
-             .Call("PL",pp,X,XX,Sign,jumps,weight, package="matchsurv")))
+             .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE ="matchsurv")))
       gradient <- Reduce("+", lapply(val, function(x) x$gradient))
       hessian <- Reduce("+", lapply(val, function(x) x$hessian))
       S0 <- lapply(val, function(x) x$S0)
@@ -184,11 +185,11 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     dd <- .Call("prep",
                 entry,exit, status,weight,X,
                 sum(entry)!=0,
-                package="matchsurv")
+                PACKAGE ="matchsurv")
     
     obj <- function(pp, U=FALSE, all=FALSE) {
       val <- with(dd,
-                  .Call("PL",pp,X,XX,Sign,jumps,weight, package="matchsurv"))
+                  .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE = "matchsurv"))
       val$nevent<-length(val$S0)
       if (all){
         val$time<-dd$time[dd$ord+1]
@@ -235,6 +236,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @param formula formula with 'Surv' outcome (see \code{coxph}); use strata() for strata-variables
 ##' @param data data frame - already set-up. (see\code{compdata} for modre details)
 ##' @param ... Additional arguments to lower level funtions
+##' @useDynLib matchsurv
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)

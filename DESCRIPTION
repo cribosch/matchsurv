@@ -11,7 +11,9 @@ LinkingTo: Rcpp, RcppArmadillo
 Depends:lava (>= 1.5),
         R (>= 3.3),
         timereg (>= 1.9),
-        mets
+        mets,
+        data.table,
+        plyr
 Imports: Rcpp,
          survival
 RoxygenNote: 6.0.1
