@@ -200,10 +200,11 @@ prep.match.comp.risk<-function (data, times = NULL,
   prec <- .Machine$double.eps * prec.factor
   
   trunc.model <- cens.model <- NULL
+  #browser()
+  
   out[, pexittime:=pmin(get(eexittime), get(uexittime))]
   out[, pcause:=ifelse(pexittime==get(eexittime),ecause,ucause)]
-  out[eentrytime==pexittime, pexittime:=pexittime+runif(1,0,0.002)] #I don't know if it is a valid solution. check it!
-  #browser()
+  out[pexittime==0, pexittime:=pexittime+runif(1,0,0.002)] #I don't know if it is a valid solution. check it!
   if (is.null(cens.formula)) {
     if (is.null(strata)) {
       if (!is.null(eentrytime)) {
