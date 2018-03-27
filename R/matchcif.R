@@ -20,8 +20,8 @@
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                    time.points,cens.formula=NULL, cens.code=0){
   #browser()
-  #currentOPTs <- options("na.action")
-  #options(na.action = "na.pass")
+  currentOPTs <- options("na.action")
+  options(na.action = "na.pass")
   m <- match.call()[1:5]
   Terms <- terms(formula,data=data,cluster=cluster, idControl=idControl, strata=strata)
   m$formula <- Terms
@@ -42,16 +42,15 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     Truncation <- TRUE
   } else {
     Truncation <- FALSE
-    # if (sum(is.na(entry))>0) {
-    #   warning("Time to event might be null\n")
-    #   entryna<-entry
-    #   exitna<-exit
-    #   entryna[is.na(entry)]<-exit[is.na(entry)]
-    #   exitna[is.na(entry)]<-(exit[is.na(entry)]+runif(1,0,0.002))
-    #   entry<-entryna
-    #   exit<-exitna
-    # }
   }
+  if (any(entry==exit)) { #I don't know if it is a valid solution. check it!
+      warning("Time to event might be null\n")
+      entryna<-entry
+      exitna<-exit
+      exitna[entry==exit]<-(exit[entry==exit]+runif(1,0,0.01))
+      entry<-entryna
+      exit<-exitna
+    }
   
   if(data.table::is.data.table(data)) {
   X <- data[,attributes(Terms)$term.labels, with=FALSE]
@@ -59,8 +58,10 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
   }
   if (!is.null(strata)) X<-cbind(X,strata)
+  if (ncol(X)!=0) X<-X[idControl==1]
+  #X<-rep(x,each=)
 
-  ##options(na.action = currentOPTs$na.action)
+  options(na.action = currentOPTs$na.action)
   
   ### it might not be a matrix if it is just one. 
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
@@ -70,38 +71,31 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
   
   if (Truncation){
     
-    if (ncol(X)==0) {
-      d1<-data.table::data.table(entry,exit,cause, cluster, idControl)
-    } else d1<-data.table::data.table(entry,exit,cause, cluster, idControl, X)
+    d1<-data.table::data.table(entry,exit,cause, cluster, idControl)
     data.table::setkey(d1, cluster, idControl)
     maxunexp<-d1[,max(length(idControl))-1, by=cluster][,max(V1)]
-    if (ncol(X)==0) { 
-      d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
+    d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
                           value.var = c("entry","exit","cause"))
-    } else d2<-data.table::dcast(d1, as.formula(paste(paste(c("cluster",namesX), collapse="+"),"idControl", sep="~")),
-                                 value.var = c("entry","exit","cause"))
+    if (ncol(X)!=0)  d2<-data.table(d2, X)
     data.table::setnames(d2, c("entry_1","exit_1","cause_1"), c("eentry","eexit","ecause"))
     colentry = paste("entry", (1:maxunexp)+1, sep = "_")
     colexit = paste("exit", (1:maxunexp)+1, sep = "_")
     colcause = paste("cause", (1:maxunexp)+1, sep = "_")
     if (ncol(X)==0) {
       d3<-data.table::melt(d2, id.vars=c("cluster","eentry","eexit","ecause"),
-                         measure=list(colentry, colexit, colcause), value.name=c("uentry","uexit","ucause"), 
-                         variable.name="idControl")
+                           measure=list(colentry, colexit, colcause), value.name=c("uentry","uexit","ucause"), 
+                           variable.name="idControl")
     } else d3<-data.table::melt(d2, id.vars=c("cluster","eentry","eexit","ecause", namesX),
                                 measure=list(colentry, colexit, colcause), value.name=c("uentry","uexit","ucause"), 
                                 variable.name="idControl")
   } else {
     
-    if (ncol(X)==0) { d1<-data.table::data.table(exit,cause, cluster, idControl)
-      } else d1<-data.table::data.table(exit,cause, cluster, idControl, X)
+    d1<-data.table::data.table(exit,cause, cluster, idControl)
     data.table::setkey(d1, cluster, idControl)
     maxunexp<-d1[,max(length(idControl))-1, by=cluster][,max(V1)]
-    if (ncol(X)==0) {
-      d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
-                                           value.var = c("exit","cause"))
-    } else d2<-data.table::dcast(d1, as.formula(paste(paste(c("cluster",namesX), collapse="+"),"idControl", sep="~")),
+    d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
                           value.var = c("exit","cause"))
+    if (ncol(X)!=0) d2<-data.table(d2,X)
     data.table::setnames(d2, c("exit_1","cause_1"), c("eexit","ecause"))
     colexit = paste("exit", (1:maxunexp)+1, sep = "_")
     colcause = paste("cause", (1:maxunexp)+1, sep = "_")
@@ -204,7 +198,7 @@ prep.match.comp.risk<-function (data, times = NULL,
   
   out[, pexittime:=pmin(get(eexittime), get(uexittime))]
   out[, pcause:=ifelse(pexittime==get(eexittime),ecause,ucause)]
-  out[pexittime==0, pexittime:=pexittime+runif(1,0,0.002)] #I don't know if it is a valid solution. check it!
+  #out[pexittime==0, pexittime:=pexittime+runif(1,0,0.002)] 
   if (is.null(cens.formula)) {
     if (is.null(strata)) {
       if (!is.null(eentrytime)) {
