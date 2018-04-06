@@ -14,11 +14,12 @@
 ##' @param time.points vector of time points where the glm will be estimated (10 usually is a sufficient number; the more time points, the slower the glm function)
 ##' @param cens.formula useful to estimate the weights when censoring is present. no quotes, add something like ~age+year
 ##' @param cens.code default is 0
+##' @param event; in which event are you interested in?
 ##' @author Cristina Boschini
 ##' @return A setup dataset, ready for \code{geese}
 ##' @export
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
-                   time.points,cens.formula=NULL, cens.code=0){
+                   time.points,cens.formula=NULL, cens.code=0, event=1){
   #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
@@ -68,6 +69,8 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
   p<-ncol(X)
   if(!is.null(colnames(X))) namesX<-colnames(X)
   else if(p>0) namesX <- paste("var",seq(1,p),sep="")
+  
+  cause<-((cause==event)*1+(cause!=event & cause!=0)*2)
   
   if (Truncation){
     
