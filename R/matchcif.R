@@ -20,7 +20,6 @@
 ##' @export
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                    time.points,cens.formula=NULL, cens.code=0, event=1){
-  #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call()[1:5]

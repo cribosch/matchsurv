@@ -13,7 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
-  #browser()
+  browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call(expand.dots=TRUE)[1:5]
@@ -830,7 +830,7 @@ plot.matchpropexc  <- function(x,relsurv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
 }
 
 ##' @export
-lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+lines.matchpropexc <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
 
