@@ -5,7 +5,7 @@
 \title{Data structured for glm approach in competing risk setting}
 \usage{
 compcomp(formula, data, cluster, idControl, strata = NULL, time.points,
-  cens.formula = NULL, cens.code = 0)
+  cens.formula = NULL, cens.code = 0, event = 1)
 }
 \arguments{
 \item{formula}{formula with 'Event' outcome (see \code{timereg} package); time stands for the start time, while time2 stands for the stop time. cause=1 will be considered as the event of interest}
@@ -23,6 +23,8 @@ compcomp(formula, data, cluster, idControl, strata = NULL, time.points,
 \item{cens.formula}{useful to estimate the weights when censoring is present. no quotes, add something like ~age+year}
 
 \item{cens.code}{default is 0}
+
+\item{event}{in which event are you interested in?}
 }
 \value{
 A setup dataset, ready for \code{geese}

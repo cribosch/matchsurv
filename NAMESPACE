@@ -2,7 +2,6 @@
 
 S3method(coef,matchpropexc)
 S3method(lines,matchpropexc)
-S3method(lines,phreg)
 S3method(plot,matchpropexc)
 S3method(predict,matchpropexc)
 S3method(print,summary.matchpropexc)

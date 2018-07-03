@@ -13,7 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, cluster, idControl,...){
-  browser()
+  #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call(expand.dots=TRUE)[1:5]
@@ -54,7 +54,11 @@ compdata<-function(formula, data, cluster, idControl,...){
   cluster<-model.extract(m,"cluster")
   names(cluster)<- NULL
   
-  X <- data[, attributes(Terms)$term.labels, drop=FALSE]
+  if(data.table::is.data.table(data)) {
+    X <- data[,attributes(Terms)$term.labels, with=FALSE]
+  } else {
+    X<-data[,attributes(Terms)$term.labels, drop=FALSE]
+  }  
   options(na.action = currentOPTs$na.action)
   
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
@@ -136,7 +140,8 @@ compdata<-function(formula, data, cluster, idControl,...){
 ##' @useDynLib matchsurv
 matchpropexc0 <- function(X,entry, exit, status, weight,
                           strata=NULL, beta,stderr=TRUE,
-                          strata.name=NULL,...){
+                          strata.name=NULL,id=NULL,...){
+  #browser()
   if(is.vector(X)) X <- matrix(X, ncol=1)
   p <-ncol(X)
   if (missing(beta)) beta <-rep(0,p)
@@ -150,9 +155,11 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     dd <- lapply(strataidx, function(ii)
       .Call("prep",
             entry[ii], exit[ii], status[ii], weight[ii],
-            as.matrix(X)[ii,,drop=FALSE],sum(entry[ii])!=0,
+            as.matrix(X)[ii,,drop=FALSE],
+            id[ii],
+            sum(entry[ii])!=0,
             PACKAGE ="matchsurv"))
-    
+    if (!is.null(id)) id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp, U=FALSE, all=FALSE) {
       val <- lapply(dd, function (d)
         with(d,
@@ -184,9 +191,11 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     nstrata<-1
     dd <- .Call("prep",
                 entry,exit, status,weight,X,
+                as.integer(seq_along(entry)),
                 sum(entry)!=0,
                 PACKAGE ="matchsurv")
-    
+    if (!is.null(id))
+      id <- dd$id[dd$jumps+1]
     obj <- function(pp, U=FALSE, all=FALSE) {
       val <- with(dd,
                   .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE = "matchsurv"))
@@ -222,6 +231,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
                 status=status,
                 p=p,
                 X=X,
+                id=id,
                 weight=weight, opt=opt,
                 nstrata=nstrata,
                 strata.name=strata.name))
@@ -249,9 +259,10 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @author Cristina Boschini
 ##' @export
 matchpropexc <- function(formula, data,...){
+  #browser()
   cl <- match.call()
   m <- match.call(expand.dots=TRUE)[1:3]
-  special <- c("strata")
+  special <- c("strata","cluster")
   Terms <- terms(formula,special,data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
@@ -269,14 +280,19 @@ matchpropexc <- function(formula, data,...){
     status <- Y[,3]
     Truncation <- TRUE
   }
-  strata <- NULL
+  id<-strata <- NULL
+  if (!is.null(attributes(Terms)$specials$cluster)) {
+    ts<-survival::untangle.specials(Terms,"cluster")
+    Terms<-Terms[-ts$terms]
+    id<-m[[ts$vars]]
+  }
   if (!is.null(stratapos <- attributes(Terms)$specials$strata)){
     ts <- survival::untangle.specials(Terms, "strata")
     Terms <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
     strata.name<-ts$vars
   } else strata.name <- NULL
-  # cluster <- NULL
+  # cluster <- NULL older version of the function; now cluster has another meaning
   # if (!is.null(attributes(Terms)$specials$cluster)){
   #   ts <- survival::untangle.specials(Terms, "cluster")
   #   Terms <- Terms[-ts$terms]
@@ -298,7 +314,8 @@ matchpropexc <- function(formula, data,...){
   res <- c(matchpropexc0(X,entry=entry,exit=exit,
                          status=status,weight=weight,
                          strata=strata,
-                         strata.name=strata.name,...),
+                         strata.name=strata.name,
+                         id=id,...),
            list(call=cl, model.frame=m))
   class(res) <- "matchpropexc"
   

@@ -12,21 +12,25 @@ RcppExport SEXP prep(SEXP EntrySEXP,
 		     SEXP StatusSEXP,
 		     SEXP WeightSEXP,
 		     SEXP XSEXP,
+		     SEXP IdSEXP,
 		     SEXP TruncationSEXP) {
   BEGIN_RCPP
-    arma::vec entry = Rcpp::as<arma::vec>(EntrySEXP);
+  arma::vec entry = Rcpp::as<arma::vec>(EntrySEXP);
   arma::vec exit = Rcpp::as<arma::vec>(ExitSEXP);
   arma::Col<int> status = Rcpp::as<arma::Col<int> >(StatusSEXP);
   arma::Col<int>  weight = Rcpp::as<arma::Col<int> >(WeightSEXP);
   arma::mat x=Rcpp::as<arma::mat>(XSEXP);
-  
+  try {
+    arma::Col<unsigned> Id =Rcpp::as<arma::Col<unsigned> >(IdSEXP);
+  }
+  catch(...) {}
   //Rcout << "x=" << x <<std::endl;
   
   bool Truncation=Rcpp::as<bool>(TruncationSEXP);
   
   unsigned n =exit.n_elem;
   if (Truncation) n *=2;
-    
+  
   mat XX(n,x.n_cols*x.n_cols);
   for (unsigned i=0; i<x.n_rows; i++) {
     rowvec Xi =x.row(i);
@@ -47,9 +51,9 @@ RcppExport SEXP prep(SEXP EntrySEXP,
   }
   
   //Rcout << "Status=" << status <<std::endl;
-  arma::uvec idx0 = sort_index(status,1);
+  arma::uvec idx0 = sort_index(status,"descend");
   //vec checktime = exit.elem(idx0);
-  arma::uvec idx = stable_sort_index(exit.elem(idx0),0);
+  arma::uvec idx = stable_sort_index(exit.elem(idx0),"ascend");
   idx = idx0.elem(idx);
   
   // Rcout << "idx" << idx <<std::endl;
@@ -70,6 +74,7 @@ RcppExport SEXP prep(SEXP EntrySEXP,
   arma::uvec jumps = find(status>0);
   
   // Rcout << "jumps" << jumps <<std::endl;
+  arma::Col<unsigned> newId;
   
   return(Rcpp::wrap(Rcpp::List::create(Named("XX")=XX,
 				       Named("X")=x,
@@ -77,7 +82,8 @@ RcppExport SEXP prep(SEXP EntrySEXP,
 				       Named("Sign")=Sign,
 				       Named("ord")=idx,
 				       Named("time")=exit,
-				       Named("weight")=weight
+				       Named("weight")=weight,
+				       Named("id")=newId
 				       )));
   END_RCPP
     }

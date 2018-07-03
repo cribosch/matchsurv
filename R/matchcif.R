@@ -14,7 +14,7 @@
 ##' @param time.points vector of time points where the glm will be estimated (10 usually is a sufficient number; the more time points, the slower the glm function)
 ##' @param cens.formula useful to estimate the weights when censoring is present. no quotes, add something like ~age+year
 ##' @param cens.code default is 0
-##' @param event; in which event are you interested in?
+##' @param event in which event are you interested in?
 ##' @author Cristina Boschini
 ##' @return A setup dataset, ready for \code{geese}
 ##' @export
