@@ -107,7 +107,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   
   # time/status for cause 1
   cont1 <- lapply(1:ncont, function(y) {
-    data.frame(pc.hazard(back1,n,entry=entry),  #time for unexposed with background=1
+    data.frame(pc.hazard(back1,n=n,entry=entry),  #time for unexposed with background=1
                j=y+1,
                id=1:n,
                expo=0)
@@ -122,7 +122,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   if (competing) {
     
     contcomp <- lapply(1:ncont, function(y) {
-      data.frame(pc.hazard(back2, n, entry=entry))
+      data.frame(pc.hazard(back2, n=n, entry=entry))
     }
     )
     
@@ -136,11 +136,11 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   
   ## exposed
   excess1 <- rbind(c(0,0),c(5,0.20), c(40,0.30))
-  case11 <- pc.hazard(back1,n,entry=entry)
+  case11 <- pc.hazard(back1,n=n,entry=entry)
   if(!nullmod){
     rr <- exp(z*0.5)
-    case12 <- pc.hazard(excess1,rr)
-  } else case12 <- pc.hazard(excess1,n)
+    case12 <- pc.hazard(excess1,rr=rr)
+  } else case12 <- pc.hazard(excess1,n=n)
   
   case11$dur <- case11$time-case11$entry
   case11$dur  <- pmin(case11$dur,case12$time) 
@@ -153,8 +153,8 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
     excess2 <-t(c(1,0.8)*t(excess1))
     if(!nullmod) {
       rr <- exp(z*0.25)
-      case22 <- pc.hazard(excess2,rr)
-    } else  case22 <- pc.hazard(excess2,n)
+      case22 <- pc.hazard(excess2,rr=rr)
+    } else  case22 <- pc.hazard(excess2,n=n)
     case11$status <- ifelse(case11$dur<case22$time, case11$status, 2*case22$status)
     case11$dur <- pmin(case11$dur, case22$time)
   }
