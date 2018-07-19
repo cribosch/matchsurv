@@ -163,6 +163,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
       val <- lapply(dd, function (d)
         with(d,
              .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE ="matchsurv")))
+      ##ploglik<-Reduce("+", lapply(val, function(x) x$ploglik))
       gradient <- Reduce("+", lapply(val, function(x) x$gradient))
       hessian <- Reduce("+", lapply(val, function(x) x$hessian))
       S0 <- lapply(val, function(x) x$S0)
@@ -178,13 +179,15 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
         xjumps<-lapply(val, function(x) x$xjumps)
         #S0 <- lapply(val, function(x) x$S0)
         #nevent<-unlist(lapply(S0,length))
-        return(list(gradient=gradient, hessian=hessian,
+        return(list(##ploglik=ploglik, 
+                    gradient=gradient, hessian=hessian,
                     U=U, S0=S0, nevent=nevent,
                     ord=ord, time=time, jumps=jumps, 
                     jumpstime=jumpstime, weight=weight,
                     E=E, xjumps=xjumps))
       }
-      structure(nevent,gradient=-gradient, hessian=-hessian)
+      structure(nevent,gradient=-gradient, hessian=-hessian ##, ploglik=-ploglik
+                )
     }
   } else {
     nstrata<-1
@@ -199,6 +202,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
       val <- with(dd,
                   .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE = "matchsurv"))
       val$nevent<-length(val$S0)
+      
       if (all){
         val$time<-dd$time[dd$ord+1]
         val$ord<-dd$ord+1
@@ -207,7 +211,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
         #val$nevent<-length(val$S0)
         return(val)
       }
-      with(val, structure(nevent,gradient=-gradient, hessian=-hessian))
+      with(val, structure(nevent,gradient=-gradient, hessian=-hessian ##ploglik=-ploglik
+                          ))
     }
   }
   
@@ -220,7 +225,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     val <-c(list(coef=cc), obj(opt$estimate, all=TRUE))
   } else {
     val <- obj(0,all=TRUE)
-    val[c("gradient","hessian","U")]<-NULL
+    val[c(#"ploglik"
+      ,"gradient","hessian","U")]<-NULL
   }
   
   res <- c(val,
