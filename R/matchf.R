@@ -225,8 +225,8 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     val <-c(list(coef=cc), obj(opt$estimate, all=TRUE))
   } else {
     val <- obj(0,all=TRUE)
-    val[c(#"ploglik"
-      ,"gradient","hessian","U")]<-NULL
+    val[c(#"ploglik",
+      "gradient","hessian","U")]<-NULL
   }
   
   res <- c(val,
