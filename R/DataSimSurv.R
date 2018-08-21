@@ -84,6 +84,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
                        ncont, #number of controls
                        competing=FALSE, #with a competing event
                        nullmod=FALSE){
+  #browser()
 
   n <- nca
   

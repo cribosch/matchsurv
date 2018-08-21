@@ -331,6 +331,7 @@ matchpropexc <- function(formula, data,...){
 
 ###{{{ sandEst
 sandEst<- function(x,...){
+  #browser()
   invhess <- solve(x$hessian)
   if (!is.list(x$weight)){ 
     indicator <- ifelse(x$weight>0,1,2)
