@@ -22,12 +22,14 @@ Example
 
 ``` r
 library(matchsurv)
-#> Loading required package: survival
-#> Loading required package: timereg
-#> Loading required package: mets
 #> Loading required package: lava
-#> lava version 1.5.1
-#> mets version 1.2.2
+#> lava version 1.6.3
+#> Loading required package: timereg
+#> Loading required package: survival
+#> Loading required package: mets
+#> mets version 1.2.4
+#> Loading required package: data.table
+#> Loading required package: plyr
 ```
 
 For each exposed individual we have a defined number of unexposed individuals, matched according to some relevant factors (the number of unexposed individuals per exposed can be different).
@@ -38,16 +40,16 @@ Here it is an example of the data:
 d<-data.sim(5000,5)
 head(d,10)
 #>        time status expo id j x z       cc
-#> 1  63.01469      0    0  1 2 0 1 63.04353
-#> 2  64.42602      0    0  2 2 0 1 65.81813
-#> 3  65.95442      0    0  3 2 0 1 58.05087
-#> 4  32.38016      1    0  4 2 0 0 65.50442
-#> 5  79.61409      0    0  5 2 1 1 63.75141
-#> 6  73.88104      0    0  6 2 1 1 70.98413
-#> 7  75.11966      0    0  7 2 1 0 67.36123
-#> 8  62.00047      0    0  8 2 0 1 66.53394
-#> 9  16.02534      1    0  9 2 1 1 71.87354
-#> 10 73.51231      0    0 10 2 1 0 61.99114
+#> 1  77.95430      0    0  1 2 1 0 74.04276
+#> 2  66.99011      0    0  2 2 0 1 64.23351
+#> 3  61.16902      0    0  3 2 0 1 67.23846
+#> 4  37.74204      1    0  4 2 1 1 69.15333
+#> 5  66.56251      0    0  5 2 0 1 72.16574
+#> 6  74.32605      0    0  6 2 1 1 67.13336
+#> 7  66.52239      0    0  7 2 0 1 71.54178
+#> 8  65.62297      0    0  8 2 0 1 58.51820
+#> 9  74.34668      0    0  9 2 1 0 62.66389
+#> 10 29.54146      1    0 10 2 1 1 72.88285
 ```
 
 `matchsurv::data.sim` let you simulate some matched survival data; `competing=TRUE` will let you chose for a competing risk setting; when `nullmod=TRUE` no covariates are simulated.
