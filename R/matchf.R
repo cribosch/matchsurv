@@ -210,7 +210,7 @@ compdata<-function(formula, data, clust, idControl,...){
   colnames(dset)<- c("entry","exit","status","weight","clust")
   
   if (ncol(X)>0) {
-    Xcases<-cbind(X,clust,expo)
+    Xcases<-data.frame(X,clust,expo)
     Xcases<-Xcases[expo==1,-ncol(Xcases)]
     colnames(Xcases)<-c(colnames(X),"clust")
     dset2 <-dplyr::left_join(x=dset,y=Xcases, by="clust")
