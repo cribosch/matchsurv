@@ -20,6 +20,7 @@
 ##' @export
 compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                    time.points,cens.formula=NULL, cens.code=0, event=1){
+  #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call()[1:5]
@@ -52,13 +53,21 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
       exit<-exitna
     }
   
+  cord<-order(cluster,idControl)
+  
   if(data.table::is.data.table(data)) {
-  X <- data[,attributes(Terms)$term.labels, with=FALSE]
+    X <- data[,attributes(Terms)$term.labels, with=FALSE]
+    #X<-cbind(X,cluster)
+    X<-X[cord]
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
+    #X<-cbind(X,cluster)
+    X<-X[cord,]
   }
   if (!is.null(strata)) X<-cbind(X,strata)
-  if (ncol(X)!=0) X<-X[idControl==1]
+  if (ncol(X)!=0) {
+    X<-X[idControl[cord]==1,]
+  }
   #X<-rep(x,each=)
 
   options(na.action = currentOPTs$na.action)
@@ -78,7 +87,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     maxunexp<-d1[,max(length(idControl))-1, by=cluster][,max(V1)]
     d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
                           value.var = c("entry","exit","cause"))
-    if (ncol(X)!=0)  d2<-data.table(d2, X)
+    if (ncol(X)!=0)  d2<-data.table::data.table(d2, X)
     data.table::setnames(d2, c("entry_1","exit_1","cause_1"), c("eentry","eexit","ecause"))
     colentry = paste("entry", (1:maxunexp)+1, sep = "_")
     colexit = paste("exit", (1:maxunexp)+1, sep = "_")
@@ -97,7 +106,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     maxunexp<-d1[,max(length(idControl))-1, by=cluster][,max(V1)]
     d2<-data.table::dcast(d1, as.formula(paste("cluster","idControl", sep="~")),
                           value.var = c("exit","cause"))
-    if (ncol(X)!=0) d2<-data.table(d2,X)
+    if (ncol(X)!=0) d2<-data.table::data.table(d2,X)
     data.table::setnames(d2, c("exit_1","cause_1"), c("eexit","ecause"))
     colexit = paste("exit", (1:maxunexp)+1, sep = "_")
     colcause = paste("cause", (1:maxunexp)+1, sep = "_")
@@ -176,7 +185,7 @@ prep.match.comp.risk<-function (data, times = NULL,
                                 trunc.mintau = FALSE) {
   #browser()
   #suppressMessages(require(data.table))
-  if(!is.data.table(data)) data.table::setDT(data)
+  if(!data.table::is.data.table(data)) data.table::setDT(data)
   out<-copy(data)
   pairexittimes<-c(eexittime, uexittime)
   #pairentrytimes<-c(eentrytime, uentrytime)
