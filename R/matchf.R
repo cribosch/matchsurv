@@ -229,11 +229,12 @@ driskv <- function(start,stop,status,expo,clust)
   
   ###
   sig <- c(rep(-1,each=n),rep(1,each=n)) #-1 for entry, 1 for exit
-  clust <- c(clust,clust)
+  clust.seq <- c(as.numeric(as.factor(clust)),as.numeric(as.factor(clust)))
+  clust<-c(clust,clust)
   expo <-c(expo,expo)
   sstatus<-c(rep(0,length(start)), status)
   tts <- c(start,stop)
-  ot <- order(clust,tts, -rank(sstatus))
+  ot <- order(clust.seq,tts, -rank(sstatus))
   
   ### id is not interesting if you'r enot computing robust standard error
   tts <- tts[ot]
@@ -241,7 +242,8 @@ driskv <- function(start,stop,status,expo,clust)
   sig <- sig[ot]
   expo <- expo[ot]
   clust <- clust[ot]
-  cc <- c(mets::revcumsumstrata(sig*expo*10+sig*(expo==0),clust-1,nclust))
+  clust.seq<-clust.seq[ot]
+  cc <- c(mets::revcumsumstrata(sig*expo*10+sig*(expo==0),clust.seq-1,nclust))
   
   ###
   pair.risk <- which(cc>10) #pair at risk; where? save values at this time:
