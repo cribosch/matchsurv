@@ -266,7 +266,7 @@ driskv <- function(start,stop,status,expo,clust)
                                                                       rep(clustpl, time=weightpl))))*1 #weights
   weightstatusrep<-rep(tstatus, times=weightpl)*(caseweightrep!=0) # status
   clustplrep<-rep(clustpl, times=weightpl)
-  out <- cbind(timesout,weightstatusrep, caseweightrep, clustplrep)[whichnotsame,]
+  out <- data.frame(timesout,weightstatusrep, caseweightrep, clustplrep)[whichnotsame,]
   out<-out[order(out[,5]),]
   return(out)
 }
