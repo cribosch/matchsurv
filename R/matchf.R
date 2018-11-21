@@ -53,14 +53,15 @@ compdata<-function(formula, data, clust, idControl,...){
   names(idControl)<- NULL
   clust<-model.extract(m,"clust")
   names(clust)<- NULL
-
+  
   if(data.table::is.data.table(data)) {
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
+  }
   #if (ncol(X)!=0) X<-X[order(clust),]
   options(na.action = currentOPTs$na.action)
-
+  
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
   p<-ncol(X)
   if(!is.null(colnames(X))) namesX<-colnames(X)
@@ -999,5 +1000,3 @@ lines.matchpropexc <- function(x,...,add=TRUE) plot(x,...,add=add)
 #' @importFrom grDevices col2rgb rgb
 #' @importFrom graphics lines plot abline
 #' @importFrom stats coef model.extract model.matrix pnorm predict printCoefmat qnorm rbinom rexp rnorm runif terms vcov
-
-

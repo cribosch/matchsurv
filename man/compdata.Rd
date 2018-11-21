@@ -11,9 +11,9 @@ compdata(formula, data, clust, idControl, ...)
 
 \item{data}{data frame}
 
-\item{clust}{vector exposed indicator; it identifies the "cluster" (one exposed in each clust i)}
+\item{clust}{vector clust indicator (one match.exposed for each exposed individual)}
 
-\item{idControl}{vector control indicator (idControl==1 indicates exposed individual in clust i)}
+\item{idControl}{vector control indicator (idControl==1 indicates exposed individual in match.exposed i)}
 
 \item{...}{Additional arguments to lower level funtions}
 }
