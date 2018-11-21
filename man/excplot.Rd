@@ -45,7 +45,7 @@ Plotting the cumulative baselines excess hazard
 }
 \examples{
 dd<-data.sim(nca=5000, ncont=5)
-setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, cluster=id)
+setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, clust=id)
 m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),data=setdd)
 excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 

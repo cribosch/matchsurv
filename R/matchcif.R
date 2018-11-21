@@ -160,7 +160,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     
     #nocens <- ((i2out[, eexit] < h)  | (i2out[, uexit] < h))
     #mm <- rbind(mm, cbind(i2out, Rt, h, nocens))
-  setDT(mm)
+  data.table::setDT(mm)
   return(mm)
 } 
 ###}}} compdata
@@ -175,8 +175,8 @@ prep.match.comp.risk<-function (data, times = NULL,
                                 nocens.data = TRUE, cens.formula = NULL, cens.code = 0, prec.factor = 100, 
                                 trunc.mintau = FALSE) {
   #browser()
-  suppressMessages(require(data.table))
-  if(!is.data.table(data)) setDT(data)
+  #suppressMessages(require(data.table))
+  if(!is.data.table(data)) data.table::setDT(data)
   out<-copy(data)
   pairexittimes<-c(eexittime, uexittime)
   #pairentrytimes<-c(eentrytime, uentrytime)

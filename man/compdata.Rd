@@ -4,16 +4,16 @@
 \alias{compdata}
 \title{Data structured for matchpropexc}
 \usage{
-compdata(formula, data, cluster, idControl, ...)
+compdata(formula, data, clust, idControl, ...)
 }
 \arguments{
 \item{formula}{formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()}
 
 \item{data}{data frame}
 
-\item{cluster}{vector cluster indicator (one cluster for each exposed individual)}
+\item{clust}{vector exposed indicator; it identifies the "cluster" (one exposed in each clust i)}
 
-\item{idControl}{vector control indicator (idControl==1 indicates exposed individual in cluster i)}
+\item{idControl}{vector control indicator (idControl==1 indicates exposed individual in clust i)}
 
 \item{...}{Additional arguments to lower level funtions}
 }
@@ -25,7 +25,7 @@ Data structured for matchpropexc
 }
 \examples{
 dd<-data.sim(nca=5000, ncont=5)
-setdd<-compdata(Surv(time, status)~x+z+cc, cluster=id, idControl=j, data=dd)
+setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
 summary(setdd)
 }
 \author{
