@@ -192,11 +192,10 @@ compdata<-function(formula, data, clust, idControl,...){
   
   if(data.table::is.data.table(data)) {
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
-    if (ncol(X)!=0) X<-X[order(clust)]
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-    if (ncol(X)!=0) X<-X[order(clust),]
   }  
+  if (ncol(X)!=0) X<-X[order(clust),]
   options(na.action = currentOPTs$na.action)
   
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
