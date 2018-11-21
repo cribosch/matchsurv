@@ -150,7 +150,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, clust, idControl,...){
-  #browser()
+  browser()
   #require(dplyr)
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
