@@ -13,12 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, clust, idControl,...){
-<<<<<<< HEAD
-  #browser()
-=======
   browser()
-  #require(dplyr)
->>>>>>> bd3435ecdd95808880277ec601569ae9cdeaae21
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call(expand.dots=TRUE)[1:5]
@@ -63,12 +58,7 @@ compdata<-function(formula, data, clust, idControl,...){
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-<<<<<<< HEAD
-  }
-=======
-  }  
-  if (ncol(X)!=0) X<-X[order(clust),]
->>>>>>> bd3435ecdd95808880277ec601569ae9cdeaae21
+  #if (ncol(X)!=0) X<-X[order(clust),]
   options(na.action = currentOPTs$na.action)
 
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
