@@ -13,7 +13,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, clust, idControl,...){
-  browser()
+  #browser()
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
   m <- match.call(expand.dots=TRUE)[1:5]
