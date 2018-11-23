@@ -170,6 +170,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     #nocens <- ((i2out[, eexit] < h)  | (i2out[, uexit] < h))
     #mm <- rbind(mm, cbind(i2out, Rt, h, nocens))
   data.table::setDT(mm)
+  mm[, clust.num:=as.numeric(as.factor(cluster))]
   return(mm)
 } 
 ###}}} compdata
