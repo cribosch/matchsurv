@@ -194,19 +194,19 @@ compdata<-function(formula, data, clust, idControl,...){
   #browser()
   if(data.table::is.data.table(data)) {
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
-    X<-cbind(X,clust,idControl)
+    Xcases<-cbind(X,clust,idControl)
     if (ncol(X)!=0) {
-      X<-X[cord]
-      Xcases<-X[idControl==1,-ncol(X), with=FALSE]
+      Xcases<-Xcases[cord]
+      Xcases<-Xcases[idControl==1,-ncol(Xcases), with=FALSE]
       data.table::setDF(Xcases)
     }
 
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-    X<-cbind(X,clust,idControl)
+    Xcases<-cbind(X,clust,idControl)
     if (ncol(X)!=0)
-      {X<-X[cord,]
-      Xcases<-X[X$idControl==1,-ncol(X)]
+      {Xcases<-Xcases[cord,]
+      Xcases<-Xcases[Xcases$idControl==1,-ncol(Xcases)]
     }
   }
 
@@ -635,7 +635,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z), data=setdd)
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
 ##' cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 ##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 ##' #you can chose at which time-points to show the estimates
