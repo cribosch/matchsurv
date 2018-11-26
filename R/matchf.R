@@ -194,21 +194,23 @@ compdata<-function(formula, data, clust, idControl,...){
   #browser()
   if(data.table::is.data.table(data)) {
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
-    Xcases<-cbind(X,clust,idControl)
-    if (ncol(X)!=0) {
-      Xcases<-Xcases[cord]
-      Xcases<-Xcases[idControl==1,-ncol(Xcases), with=FALSE]
-      data.table::setDF(Xcases)
-    }
-
+    #browser()
+    # if (ncol(X)!=0) {
+    #   Xcases<-Xcases[cord]
+    #   Xcases<-Xcases[idControl==1,-ncol(Xcases), with=FALSE]
+    #   data.table::setDF(Xcases)
+    # }
+    # 
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-    Xcases<-cbind(X,clust,idControl)
-    if (ncol(X)!=0)
-      {Xcases<-Xcases[cord,]
-      Xcases<-Xcases[Xcases$idControl==1,-ncol(Xcases)]
-    }
+    #Xcases<-data.frame(X,clust,idControl, stringsAsFactors = FALSE)
   }
+  if (ncol(X)!=0){
+    Xcases<-data.frame(X,clust,idControl, stringsAsFactors = FALSE)
+    Xcases<-Xcases[cord,]
+    Xcases<-Xcases[Xcases$idControl==1,-ncol(Xcases)]
+  }
+  
 
   options(na.action = currentOPTs$na.action)
 
@@ -219,7 +221,7 @@ compdata<-function(formula, data, clust, idControl,...){
 
   #browser()
   expo<-(idControl==1)*1
-  dset<-data.frame(driskv(entry,exit,status,expo,clust))
+  dset<-data.frame(driskv(entry,exit,status,expo,clust), stringsAsFactors = FALSE)
   colnames(dset)<- c("entry","exit","status","weight","clust")
 
   if (ncol(X)>0) {
@@ -276,7 +278,7 @@ driskv <- function(start,stop,status,expo,clust)
                                                                       rep(clustpl, time=weightpl))))*1 #weights
   weightstatusrep<-rep(tstatus, times=weightpl)*(caseweightrep!=0) # status
   clustplrep<-rep(clustpl, times=weightpl)
-  out <- data.frame(timesout,weightstatusrep, caseweightrep, clustplrep)[whichnotsame,]
+  out <- data.frame(timesout,weightstatusrep, caseweightrep, clustplrep, stringsAsFactors = FALSE)[whichnotsame,]
   out<-out[order(out[,5]),]
   return(out)
 }
