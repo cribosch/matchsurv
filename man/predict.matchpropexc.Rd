@@ -4,8 +4,8 @@
 \alias{predict.matchpropexc}
 \title{Predict cumulative excess hazard or relative survival}
 \usage{
-\method{predict}{matchpropexc}(object, relsurv = FALSE, time = object$exit,
-  X = object$X, strata = object$strata, ...)
+\method{predict}{matchpropexc}(object, relsurv = FALSE,
+  time = object$exit, X = object$X, strata = object$strata, ...)
 }
 \arguments{
 \item{object}{model estimated with matchpropexc}

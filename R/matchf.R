@@ -53,7 +53,7 @@
 #   names(idControl)<- NULL
 #   clust<-model.extract(m,"clust")
 #   names(clust)<- NULL
-#   
+# 
 #   if(data.table::is.data.table(data)) {
 #     X <- data[,attributes(Terms)$term.labels, with=FALSE]
 #   } else {
@@ -61,7 +61,7 @@
 #   }
 #   #if (ncol(X)!=0) X<-X[order(clust),]
 #   options(na.action = currentOPTs$na.action)
-#   
+# 
 #   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 #   p<-ncol(X)
 #   if(!is.null(colnames(X))) namesX<-colnames(X)
@@ -133,7 +133,7 @@
 #   }
 #   return(d3)
 # }
-###}}} compdata
+##}}} compdata
 
 # new version of compdata 21/11/2018: faster+ works with recurrent events.
 ### {{{ compdata
@@ -150,7 +150,7 @@
 ##' @author Cristina Boschini
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
-compdata.temp<-function(formula, data, clust, idControl,...){
+compdata<-function(formula, data, clust, idControl,...){
   #browser()
   #require(dplyr)
   currentOPTs <- options("na.action")
@@ -195,32 +195,40 @@ compdata.temp<-function(formula, data, clust, idControl,...){
   if(data.table::is.data.table(data)) {
     X <- data[,attributes(Terms)$term.labels, with=FALSE]
     X<-cbind(X,clust,idControl)
-    if (ncol(X)!=0) X<-X[cord]
+    if (ncol(X)!=0) {
+      X<-X[cord]
+      Xcases<-X[idControl==1,-ncol(X), with=FALSE]
+      data.table::setDF(Xcases)
+    }
+
   } else {
     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
     X<-cbind(X,clust,idControl)
-    if (ncol(X)!=0) X<-X[cord,]
+    if (ncol(X)!=0)
+      {X<-X[cord,]
+      Xcases<-X[X$idControl==1,-ncol(X)]
+    }
   }
-  
+
   options(na.action = currentOPTs$na.action)
-  
+
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
   p<-ncol(X)
   if(!is.null(colnames(X))) namesX<-colnames(X)
   else if(p>0) namesX <- c(paste0("var",seq(1,(p-2))),c("clust","idControl"))
-  
+
   #browser()
   expo<-(idControl==1)*1
   dset<-data.frame(driskv(entry,exit,status,expo,clust))
   colnames(dset)<- c("entry","exit","status","weight","clust")
-  
+
   if (ncol(X)>0) {
-    Xcases<-X[idControl==1,-ncol(X), with=FALSE]
     dset2 <-dplyr::left_join(x=dset,y=Xcases, by="clust")
   } else dset2<-dset
   return(dset2)
 }
 ###}}} compdata
+
 ### to work with compdata 
 ###{{{ driskv
 driskv <- function(start,stop,status,expo,clust)
@@ -358,6 +366,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
   
   opt <- NULL
   if (p>0) {
+    browser()
     opt<-lava::NR(beta, obj,...)
     opt$estimate <- opt$par
     cc <- opt$estimate; names(cc) <-colnames(X)
@@ -396,9 +405,9 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
 ##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
 ##' summary(exc.model)
-##' exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd)
+##' exc.model1<-matchpropexc(Surv(entry,exit,status)~1, data=setdd)
 ##' summary(exc.model1)
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
@@ -626,7 +635,7 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z), data=setdd)
 ##' cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 ##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 ##' #you can chose at which time-points to show the estimates
@@ -788,7 +797,7 @@ predict.matchpropexc <- function(object,
 ##' @examples 
 ##' dd<-data.sim(nca=5000, ncont=5)
 ##' setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, clust=id)
-##' m <- matchpropexc(Surv(exit,status)~strata(z)+factor(x),data=setdd)
+##' m <- matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),data=setdd)
 ##' excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 ##' excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 ##' excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 

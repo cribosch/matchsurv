@@ -23,9 +23,9 @@ Excess risk paired survival model
 dd<-data.sim(nca=5000, ncont=5)
 setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
 names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
+exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
 summary(exc.model)
-exc.model1<-matchpropexc(Surv(exit,status)~1, data=setdd)
+exc.model1<-matchpropexc(Surv(entry,exit,status)~1, data=setdd)
 summary(exc.model1)
 }
 \author{

@@ -4,7 +4,8 @@
 \alias{exccumhaz}
 \title{Cumulative baseline excess hazard estimate}
 \usage{
-exccumhaz(object, strata = object$strata, time = NULL, SEcumhaz = TRUE)
+exccumhaz(object, strata = object$strata, time = NULL,
+  SEcumhaz = TRUE)
 }
 \arguments{
 \item{object}{model estimated with matchpropexc}
@@ -24,7 +25,7 @@ Cumulative baseline excess hazard estimate
 \examples{
 dd<-data.sim(nca=5000, ncont=5)
 setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-exc.model<-matchpropexc(Surv(exit,status)~strata(z)+factor(x), data=setdd)
+exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z), data=setdd)
 cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 #you can chose at which time-points to show the estimates
