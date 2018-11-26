@@ -366,7 +366,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
   
   opt <- NULL
   if (p>0) {
-    browser()
+    #browser()
     opt<-lava::NR(beta, obj,...)
     opt$estimate <- opt$par
     cc <- opt$estimate; names(cc) <-colnames(X)
