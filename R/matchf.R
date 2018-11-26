@@ -1,147 +1,9 @@
-### {{{ compdata
-##' Data structured for matchpropexc
-##' @param formula formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()
-##' @param data data frame
-##' @param idControl vector control indicator (idControl==1 indicates exposed individual in match.exposed i)
-##' @param clust vector clust indicator (one match.exposed for each exposed individual)
-##' @param ... Additional arguments to lower level funtions
-##' @examples
-##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' summary(setdd)
-##' @author Cristina Boschini
-##' @return A setup dataset, ready for \code{matchpropexc}
-##' @export
-compdata<-function(formula, data, clust, idControl,...){
-  #browser()
-  currentOPTs <- options("na.action")
-  options(na.action = "na.pass")
-  m <- match.call(expand.dots=TRUE)[1:5]
-  Terms <- terms(formula,data=data, idControl=idControl, clust=clust)
-  m$formula <- Terms
-  m[[1]] <- as.name("model.frame")
-  m <- suppressWarnings(eval(m, parent.frame()))
-  Y <- model.extract(m,"response")
-  if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
-  if (ncol(Y)==2) {
-    exit <- Y[,1]
-    entry <- rep(0,nrow(Y))
-    status <- Y[,2]
-    Truncation <- FALSE
-  } else {
-    entry <- Y[,1]
-    exit <- Y[,2]
-    status <- Y[,3]
-    Truncation <- TRUE
-    if (sum(is.na(entry))>0) {
-      warning("Time to event might be null\n")
-      entryna<-entry
-      exitna<-exit
-      entryna[is.na(entry)]<-exit[is.na(entry)]
-      exitna[is.na(entry)]<-(exit[is.na(entry)]+runif(1,0,0.002))
-      entry<-entryna
-      exit<-exitna
-    }
-  }
-  # clust <- NULL
-  if (!is.null(attributes(Terms)$specials$cluster)){
-    ts <- survival::untangle.specials(Terms, "cluster")
-    Terms <- Terms[-ts$terms]
-    cluster <- m[[ts$vars]]
-  }
-  idControl<-model.extract(m,"idControl")
-  names(idControl)<- NULL
-  clust<-model.extract(m,"clust")
-  names(clust)<- NULL
-  
-  if(data.table::is.data.table(data)) {
-    X <- data[,attributes(Terms)$term.labels, with=FALSE]
-  } else {
-    X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-  }
-  #if (ncol(X)!=0) X<-X[order(clust),]
-  options(na.action = currentOPTs$na.action)
-  
-  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
-  p<-ncol(X)
-  if(!is.null(colnames(X))) namesX<-colnames(X)
-  else if(p>0) namesX <- paste("var",seq(1,p),sep="")
-
-  if (Truncation){
-
-    wp <- mets::familyclusterWithProbands.index(clust, idControl, Rindex==1)
-
-    start<- apply(cbind(entry[wp$pairs[,1]],entry[wp$pairs[,2]]),1,max)
-    end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
-    indicator <- ifelse(end==exit[wp$pairs[,2]],
-                        status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
-    group <- clust[wp$pairs[,1]]
-    subj <- idControl[wp$pairs[,1]]-1
-    size.group <- mets::cluster.index(group)$cluster.size
-
-    funw <- function(x) sum(x==1)
-
-    weight <- rep(tapply(indicator,group,funw), size.group)
-    weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
-
-    fund <- function(x) (!(duplicated(x>1) & x>1))*x
-
-    weight <- unlist(tapply(weight,group,fund))
-    stat <- ifelse(indicator==-1,1,
-                   ifelse(indicator==1,
-                          ifelse(weight>=1,1,0),0))
-
-    d3 <- data.frame(start,end,stat,group,subj,weight)
-    colnames(d3)<- c("entry","exit", "status","clust","unexp.subj","weight")
-
-    if (ncol(X)>0) {
-      Xcases <- X[wp$pairs[,2],]
-      colnames(Xcases)<-colnames(X)
-      d3 <- data.frame(d3,Xcases, check.names=FALSE)
-    }
-    d3<-d3[d3$entry<=d3$exit,]
-  } else {
-
-    wp <- mets::familyclusterWithProbands.index(clust,idControl,Rindex=1)
-    end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
-    indicator <- ifelse(end==exit[wp$pairs[,2]],
-                        status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
-    group <- clust[wp$pairs[,1]]
-    subj <- idControl[wp$pairs[,1]]-1
-    size.group <- mets::cluster.index(group)$cluster.size
-
-    funw <- function(x) sum(x==1)
-
-    weight <- rep(tapply(indicator,group,funw), size.group)
-    weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
-
-    fund <- function(x) (!(duplicated(x>1) & x>1))*x
-
-    weight <- unlist(tapply(weight,group,fund))
-    stat <- ifelse(indicator==-1,1,
-                   ifelse(indicator==1,
-                          ifelse(weight>=1,1,0),0))
-
-    d3 <- data.frame(end,stat,group,subj,weight)
-    colnames(d3)<- c("exit","status","clust","unexp.subj","weight")
-
-    if (ncol(X)>0) {
-      Xcases <- X[wp$pairs[,2],,drop=FALSE]
-      colnames(Xcases)<-colnames(X)
-      d3 <- data.frame(d3,Xcases, check.names=FALSE)
-    }
-  }
-  return(d3)
-}
-###}}} compdata
-
-# # new version of compdata 21/11/2018: faster+ works with recurrent events.
 # ### {{{ compdata
 # ##' Data structured for matchpropexc
 # ##' @param formula formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()
 # ##' @param data data frame
-# ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in clust i)
-# ##' @param clust vector exposed indicator; it identifies the "cluster" (one exposed in each clust i)
+# ##' @param idControl vector control indicator (idControl==1 indicates exposed individual in match.exposed i)
+# ##' @param clust vector clust indicator (one match.exposed for each exposed individual)
 # ##' @param ... Additional arguments to lower level funtions
 # ##' @examples
 # ##' dd<-data.sim(nca=5000, ncont=5)
@@ -152,7 +14,6 @@ compdata<-function(formula, data, clust, idControl,...){
 # ##' @export
 # compdata<-function(formula, data, clust, idControl,...){
 #   #browser()
-#   #require(dplyr)
 #   currentOPTs <- options("na.action")
 #   options(na.action = "na.pass")
 #   m <- match.call(expand.dots=TRUE)[1:5]
@@ -166,10 +27,12 @@ compdata<-function(formula, data, clust, idControl,...){
 #     exit <- Y[,1]
 #     entry <- rep(0,nrow(Y))
 #     status <- Y[,2]
+#     Truncation <- FALSE
 #   } else {
 #     entry <- Y[,1]
 #     exit <- Y[,2]
 #     status <- Y[,3]
+#     Truncation <- TRUE
 #     if (sum(is.na(entry))>0) {
 #       warning("Time to event might be null\n")
 #       entryna<-entry
@@ -181,11 +44,11 @@ compdata<-function(formula, data, clust, idControl,...){
 #     }
 #   }
 #   # clust <- NULL
-#   # if (!is.null(attributes(Terms)$specials$cluster)){
-#   #   ts <- survival::untangle.specials(Terms, "cluster")
-#   #   Terms <- Terms[-ts$terms]
-#   #   clust <- m[[ts$vars]]
-#   # }
+#   if (!is.null(attributes(Terms)$specials$cluster)){
+#     ts <- survival::untangle.specials(Terms, "cluster")
+#     Terms <- Terms[-ts$terms]
+#     cluster <- m[[ts$vars]]
+#   }
 #   idControl<-model.extract(m,"idControl")
 #   names(idControl)<- NULL
 #   clust<-model.extract(m,"clust")
@@ -195,30 +58,169 @@ compdata<-function(formula, data, clust, idControl,...){
 #     X <- data[,attributes(Terms)$term.labels, with=FALSE]
 #   } else {
 #     X<-data[,attributes(Terms)$term.labels, drop=FALSE]
-#   }  
-#   if (ncol(X)!=0) X<-X[order(clust),]
+#   }
+#   #if (ncol(X)!=0) X<-X[order(clust),]
 #   options(na.action = currentOPTs$na.action)
 #   
 #   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 #   p<-ncol(X)
 #   if(!is.null(colnames(X))) namesX<-colnames(X)
 #   else if(p>0) namesX <- paste("var",seq(1,p),sep="")
-#   
-#   #browser()
-#   expo<-(idControl==1)*1
-#   dset<-data.frame(driskv(entry,exit,status,expo,clust))
-#   colnames(dset)<- c("entry","exit","status","weight","clust")
-#   
-#   if (ncol(X)>0) {
-#     Xcases<-data.frame(X,clust,expo)
-#     Xcases<-Xcases[expo==1,-ncol(Xcases)]
-#     colnames(Xcases)<-c(colnames(X),"clust")
-#     dset2 <-dplyr::left_join(x=dset,y=Xcases, by="clust")
-#   } else dset2<-dset
-#   return(dset2)
+# 
+#   if (Truncation){
+# 
+#     wp <- mets::familyclusterWithProbands.index(clust, idControl, Rindex==1)
+# 
+#     start<- apply(cbind(entry[wp$pairs[,1]],entry[wp$pairs[,2]]),1,max)
+#     end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
+#     indicator <- ifelse(end==exit[wp$pairs[,2]],
+#                         status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
+#     group <- clust[wp$pairs[,1]]
+#     subj <- idControl[wp$pairs[,1]]-1
+#     size.group <- mets::cluster.index(group)$cluster.size
+# 
+#     funw <- function(x) sum(x==1)
+# 
+#     weight <- rep(tapply(indicator,group,funw), size.group)
+#     weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
+# 
+#     fund <- function(x) (!(duplicated(x>1) & x>1))*x
+# 
+#     weight <- unlist(tapply(weight,group,fund))
+#     stat <- ifelse(indicator==-1,1,
+#                    ifelse(indicator==1,
+#                           ifelse(weight>=1,1,0),0))
+# 
+#     d3 <- data.frame(start,end,stat,group,subj,weight)
+#     colnames(d3)<- c("entry","exit", "status","clust","unexp.subj","weight")
+# 
+#     if (ncol(X)>0) {
+#       Xcases <- X[wp$pairs[,2],]
+#       colnames(Xcases)<-colnames(X)
+#       d3 <- data.frame(d3,Xcases, check.names=FALSE)
+#     }
+#     d3<-d3[d3$entry<=d3$exit,]
+#   } else {
+# 
+#     wp <- mets::familyclusterWithProbands.index(clust,idControl,Rindex=1)
+#     end<- apply(cbind(exit[wp$pairs[,1]],exit[wp$pairs[,2]]),1,min)
+#     indicator <- ifelse(end==exit[wp$pairs[,2]],
+#                         status[wp$pairs[,2]],ifelse(status[wp$pairs[,1]]>0,-1,0))
+#     group <- clust[wp$pairs[,1]]
+#     subj <- idControl[wp$pairs[,1]]-1
+#     size.group <- mets::cluster.index(group)$cluster.size
+# 
+#     funw <- function(x) sum(x==1)
+# 
+#     weight <- rep(tapply(indicator,group,funw), size.group)
+#     weight <- c(ifelse(indicator==-1,-1,ifelse(indicator==0,1,weight)))
+# 
+#     fund <- function(x) (!(duplicated(x>1) & x>1))*x
+# 
+#     weight <- unlist(tapply(weight,group,fund))
+#     stat <- ifelse(indicator==-1,1,
+#                    ifelse(indicator==1,
+#                           ifelse(weight>=1,1,0),0))
+# 
+#     d3 <- data.frame(end,stat,group,subj,weight)
+#     colnames(d3)<- c("exit","status","clust","unexp.subj","weight")
+# 
+#     if (ncol(X)>0) {
+#       Xcases <- X[wp$pairs[,2],,drop=FALSE]
+#       colnames(Xcases)<-colnames(X)
+#       d3 <- data.frame(d3,Xcases, check.names=FALSE)
+#     }
+#   }
+#   return(d3)
 # }
-# ###}}} compdata
+###}}} compdata
 
+# new version of compdata 21/11/2018: faster+ works with recurrent events.
+### {{{ compdata
+##' Data structured for matchpropexc
+##' @param formula formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()
+##' @param data data frame
+##' @param idControl vector control indicator (idControl==1 indicates exposed individual in clust i)
+##' @param clust vector exposed indicator; it identifies the "cluster" (one exposed in each clust i)
+##' @param ... Additional arguments to lower level funtions
+##' @examples
+##' dd<-data.sim(nca=5000, ncont=5)
+##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
+##' summary(setdd)
+##' @author Cristina Boschini
+##' @return A setup dataset, ready for \code{matchpropexc}
+##' @export
+compdata.temp<-function(formula, data, clust, idControl,...){
+  #browser()
+  #require(dplyr)
+  currentOPTs <- options("na.action")
+  options(na.action = "na.pass")
+  m <- match.call(expand.dots=TRUE)[1:5]
+  Terms <- terms(formula,data=data, idControl=idControl, clust=clust)
+  m$formula <- Terms
+  m[[1]] <- as.name("model.frame")
+  m <- suppressWarnings(eval(m, parent.frame()))
+  Y <- model.extract(m,"response")
+  if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
+  if (ncol(Y)==2) {
+    exit <- Y[,1]
+    entry <- rep(0,nrow(Y))
+    status <- Y[,2]
+  } else {
+    entry <- Y[,1]
+    exit <- Y[,2]
+    status <- Y[,3]
+    if (sum(is.na(entry))>0) {
+      warning("Time to event might be null\n")
+      entryna<-entry
+      exitna<-exit
+      entryna[is.na(entry)]<-exit[is.na(entry)]
+      exitna[is.na(entry)]<-(exit[is.na(entry)]+runif(1,0,0.002))
+      entry<-entryna
+      exit<-exitna
+    }
+  }
+  # clust <- NULL
+  # if (!is.null(attributes(Terms)$specials$cluster)){
+  #   ts <- survival::untangle.specials(Terms, "cluster")
+  #   Terms <- Terms[-ts$terms]
+  #   clust <- m[[ts$vars]]
+  # }
+  idControl<-model.extract(m,"idControl")
+  names(idControl)<- NULL
+  clust<-model.extract(m,"clust")
+  names(clust)<- NULL
+  cord <- order(idControl,clust)
+  #browser()
+  if(data.table::is.data.table(data)) {
+    X <- data[,attributes(Terms)$term.labels, with=FALSE]
+    X<-cbind(X,clust,idControl)
+    if (ncol(X)!=0) X<-X[cord]
+  } else {
+    X<-data[,attributes(Terms)$term.labels, drop=FALSE]
+    X<-cbind(X,clust,idControl)
+    if (ncol(X)!=0) X<-X[cord,]
+  }
+  
+  options(na.action = currentOPTs$na.action)
+  
+  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+  p<-ncol(X)
+  if(!is.null(colnames(X))) namesX<-colnames(X)
+  else if(p>0) namesX <- c(paste0("var",seq(1,(p-2))),c("clust","idControl"))
+  
+  #browser()
+  expo<-(idControl==1)*1
+  dset<-data.frame(driskv(entry,exit,status,expo,clust))
+  colnames(dset)<- c("entry","exit","status","weight","clust")
+  
+  if (ncol(X)>0) {
+    Xcases<-X[idControl==1,-ncol(X), with=FALSE]
+    dset2 <-dplyr::left_join(x=dset,y=Xcases, by="clust")
+  } else dset2<-dset
+  return(dset2)
+}
+###}}} compdata
 ### to work with compdata 
 ###{{{ driskv
 driskv <- function(start,stop,status,expo,clust)
