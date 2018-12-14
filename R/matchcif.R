@@ -171,6 +171,9 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
     #mm <- rbind(mm, cbind(i2out, Rt, h, nocens))
   data.table::setDT(mm)
   mm[, clust.num:=as.numeric(as.factor(cluster))]
+  mm[, weightedo:=Rt*weights]
+  mm<-mm[order(clust.num,subj, h)]
+  
   return(mm)
 } 
 ###}}} compdata
