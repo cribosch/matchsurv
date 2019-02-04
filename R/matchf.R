@@ -151,7 +151,7 @@
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
 compdata<-function(formula, data, clust, idControl,...){
-  #browser()
+  browser()
   #require(dplyr)
   currentOPTs <- options("na.action")
   options(na.action = "na.pass")
@@ -290,7 +290,7 @@ driskv <- function(start,stop,status,expo,clust)
 matchpropexc0 <- function(X,entry, exit, status, weight,
                           strata=NULL, beta,stderr=TRUE,
                           strata.name=NULL,id=NULL,...){
-  #browser()
+  browser()
   if(is.vector(X)) X <- matrix(X, ncol=1)
   p <-ncol(X)
   if (missing(beta)) beta <-rep(0,p)
