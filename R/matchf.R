@@ -371,7 +371,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
   opt <- NULL
   if (p>0) {
     #browser()
-    opt<-lava::NR(beta, obj,control=list(trace=1, tol=1e-20))
+    opt<-lava::NR(beta, obj,control=list(tol=1e-9))
     opt$estimate <- opt$par
     cc <- opt$estimate; names(cc) <-colnames(X)
     if (!stderr) return(cc)
