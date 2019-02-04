@@ -310,6 +310,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
             PACKAGE ="matchsurv"))
     if (!is.null(id)) id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp, U=FALSE, all=FALSE) {
+      browser()
       val <- lapply(dd, function (d)
         with(d,
              .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE ="matchsurv")))
@@ -349,6 +350,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
     obj <- function(pp, U=FALSE, all=FALSE) {
+      browser()
       val <- with(dd,
                   .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE = "matchsurv"))
       val$nevent<-length(val$S0)
