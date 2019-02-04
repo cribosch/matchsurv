@@ -290,7 +290,7 @@ driskv <- function(start,stop,status,expo,clust)
 matchpropexc0 <- function(X,entry, exit, status, weight,
                           strata=NULL, beta,stderr=TRUE,
                           strata.name=NULL,id=NULL,...){
-  browser()
+  #browser()
   if(is.vector(X)) X <- matrix(X, ncol=1)
   p <-ncol(X)
   if (missing(beta)) beta <-rep(0,p)
@@ -310,7 +310,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
             PACKAGE ="matchsurv"))
     if (!is.null(id)) id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp, U=FALSE, all=FALSE) {
-      browser()
+      #browser()
       val <- lapply(dd, function (d)
         with(d,
              .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE ="matchsurv")))
@@ -350,7 +350,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
     obj <- function(pp, U=FALSE, all=FALSE) {
-      browser()
+      #browser()
       val <- with(dd,
                   .Call("PL",pp,X,XX,Sign,jumps,weight, PACKAGE = "matchsurv"))
       val$nevent<-length(val$S0)
