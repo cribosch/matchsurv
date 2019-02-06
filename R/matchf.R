@@ -340,6 +340,13 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
       structure(nevent,gradient=-gradient, hessian=-hessian ##, ploglik=-ploglik
                 )
     }
+    
+    hessf <- function(p) {
+      ff <- obj(p)
+      res <- attributes(ff)$hessian
+      attributes(res)$grad <- as.vector(attributes(ff)$grad)
+      return(res)
+    }
   } else {
     nstrata<-1
     dd <- .Call("prep",
@@ -349,6 +356,7 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
                 PACKAGE ="matchsurv")
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
+    
     obj <- function(pp, U=FALSE, all=FALSE) {
       #browser()
       val <- with(dd,
@@ -366,12 +374,20 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
       with(val, structure(nevent,gradient=-gradient, hessian=-hessian ##ploglik=-ploglik
                           ))
     }
+    
+    hessf <- function(p) {
+      ff <- obj(p)
+      res <- attributes(ff)$hessian
+      attributes(res)$grad <- as.vector(attributes(ff)$grad)
+      return(res)
+    }
   }
-  
+
   opt <- NULL
   if (p>0) {
     #browser()
-    opt<-lava::NR(beta, obj,control=list(tol=1e-9))
+     opt<-lava::NR(beta,objective = obj, hessian=hessf)
+    #opt<-lava::NR(beta,objective = obj)
     opt$estimate <- opt$par
     cc <- opt$estimate; names(cc) <-colnames(X)
     if (!stderr) return(cc)
