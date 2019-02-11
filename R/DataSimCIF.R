@@ -116,7 +116,7 @@ sim.data.MatchCR<-function(nca,
   } else data.table::setcolorder(dd, c("i", "j", "expo","agee","entry","exit","time","cause"))
   if (!print.cifs) return(dd)
   else return (list(data=dd,
-                    cifs=list(excess1,uF)))
+                    cifs=list(excess,uF)))
 }
 ####}}} simMatchCR
 
