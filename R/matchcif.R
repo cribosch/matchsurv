@@ -395,7 +395,7 @@ eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
     out.list<-estimate.output[[2]][,-5]
     strata.stop<-(1:length(strata.levels))*length(times)
     out<-do.call("rbind",
-                 llply(strata.stop, function(l) {
+                 plyr::llply(strata.stop, function(l) {
                    #browser()
                    outl<-rbind(rep(0,4),out.list[(l-(lt-1)):l,])
                    return(outl)
