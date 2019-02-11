@@ -372,7 +372,6 @@ Ft <- function(p,times,formula,newdata){
 ##' @param vcov coefficient variance and covariance matrix (model$vbeta). To be specified if model is NULL, together with coefs.
 ##' @return dataset with predicted values; ready to be used with ggplot2
 ##' @export
-
 eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
                       coefs=NULL, vcov=NULL){
   #browser()
