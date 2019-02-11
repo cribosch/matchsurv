@@ -2,13 +2,13 @@
 % Please edit documentation in R/matchcif.R
 \name{eCIFpredict}
 \alias{eCIFpredict}
-\title{Excess CIF prediction based on newdata and \texttt{geepack::geese} estimates.}
+\title{Excess CIF prediction based on newdata and geepack::geese estimates.}
 \usage{
 eCIFpredict(model = NULL, times, formula, dataset,
   strata.levels = NULL, coefs = NULL, vcov = NULL)
 }
 \arguments{
-\item{model}{\texttt{geese} object. To be defined if \texttt{coefs} and \texttt{vcov} are null.}
+\item{model}{geese object. To be defined if coefs and vcov are null.}
 
 \item{times}{vector of timepoints as the one used to estimate the GEE model}
 
@@ -18,13 +18,13 @@ eCIFpredict(model = NULL, times, formula, dataset,
 
 \item{strata.levels}{if CIF predicted for different strata, define strata levels}
 
-\item{coefs}{coefficient estimates (\texttt{model$beta}). To be specified if model is NULL}
+\item{coefs}{coefficient estimates (model$beta). To be specified if model is NULL}
 
-\item{vcov}{coefficient variance and covariance matrix (\texttt{model$vbeta}). To be specified if model is NULL, together with coefs.}
+\item{vcov}{coefficient variance and covariance matrix (model$vbeta). To be specified if model is NULL, together with coefs.}
 }
 \value{
-dataset with predicted values; ready to be used with \texttt{ggplot2}
+dataset with predicted values; ready to be used with ggplot2
 }
 \description{
-Excess CIF prediction based on newdata and \texttt{geepack::geese} estimates.
+Excess CIF prediction based on newdata and geepack::geese estimates.
 }
