@@ -344,4 +344,70 @@ prep.match.comp.risk<-function (data, times = NULL,
 ###}}} prep.match.comp.risk
 
 
+##### to predict excess risk -------------
+### risk prediction ---------------
+Ft <- function(p,times,formula,newdata){
+  #browser()
+  lt<-length(times)
+  mm<-model.matrix(as.formula(paste0("~",formula,collapse = "")), data=newdata)
+  if (!all.equal(colnames(mm), names(p))) stop("check the formula, the new data and the model: you might have a different level order") 
+  zp <- mm %*% p
+  #if((length(times)+ncol(xpred))!=length(p)) stop("The variables in the model and the variables for prediction are different")
+  #xp <- sum(xpred *  p[-(1:lt)])
+  lam <- exp(zp)
+  if(ncol(newdata)>1) rownames(lam)<-paste0(newdata[,1],";", newdata[,2])
+  else rownames(lam)<-paste0(newdata[,1],";")
+  return(lam)
+}
+
+##### new CIFpredict --- to use
+### {{{ eCIFpredict
+##' Excess CIF prediction based on newdata and \texttt{geepack::geese} estimates.
+##' @param model \texttt{geese} object. To be defined if \texttt{coefs} and \texttt{vcov} are null.
+##' @param times vector of timepoints as the one used to estimate the GEE model
+##' @param formula model formula
+##' @param dataset new data
+##' @param strata.levels if CIF predicted for different strata, define strata levels
+##' @param coefs coefficient estimates (\texttt{model$beta}). To be specified if model is NULL
+##' @param vcov coefficient variance and covariance matrix (\texttt{model$vbeta}). To be specified if model is NULL, together with coefs.
+##' @return dataset with predicted values; ready to be used with \texttt{ggplot2}
+
+eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
+                      coefs=NULL, vcov=NULL){
+  #browser()
+  if( is.null(model) & is.null(coefs) & is.null(vcov)) stop("please define model or coefs+vcov")
+  lt<-length(times)
+  if(!is.null(model)){
+    coefs<-model$beta
+    vcov<-model$vbeta
+  }
+  
+  estimate.output<-lava::estimate(model, function(p) Ft(p,times = times,
+                                                        formula = formula
+                                                        ,newdata = dataset), 
+                                  coef=coefs, vcov = vcov
+                                  #, labels = rownames(check)
+  )
+  
+  
+  if (!is.null(strata.levels)) {
+    #browser()
+    out.list<-estimate.output[[2]][,-5]
+    strata.stop<-(1:length(strata.levels))*length(times)
+    out<-do.call("rbind",
+                 llply(strata.stop, function(l) {
+                   #browser()
+                   outl<-rbind(rep(0,4),out.list[(l-(lt-1)):l,])
+                   return(outl)
+                 }
+                 ))
+    out<-data.table(time=rep(c(0,times),length(strata.levels)),strata=rep(strata.levels, each=length(times)+1),out)
+  } else out<-data.table(rbind(rep(0,5),cbind(time=times,estimate.output[[2]][,-5])))
+  
+  return(data.table(out))
+  
+}
+
+### }}} eCIFpredict
+
 
