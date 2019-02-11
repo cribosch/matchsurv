@@ -362,15 +362,15 @@ Ft <- function(p,times,formula,newdata){
 
 ##### new CIFpredict --- to use
 ### {{{ eCIFpredict
-##' Excess CIF prediction based on newdata and \texttt{geepack::geese} estimates.
-##' @param model \texttt{geese} object. To be defined if \texttt{coefs} and \texttt{vcov} are null.
+##' Excess CIF prediction based on newdata and geepack::geese estimates.
+##' @param model geese object. To be defined if coefs and vcov are null.
 ##' @param times vector of timepoints as the one used to estimate the GEE model
 ##' @param formula model formula
 ##' @param dataset new data
 ##' @param strata.levels if CIF predicted for different strata, define strata levels
-##' @param coefs coefficient estimates (\texttt{model$beta}). To be specified if model is NULL
-##' @param vcov coefficient variance and covariance matrix (\texttt{model$vbeta}). To be specified if model is NULL, together with coefs.
-##' @return dataset with predicted values; ready to be used with \texttt{ggplot2}
+##' @param coefs coefficient estimates (model$beta). To be specified if model is NULL
+##' @param vcov coefficient variance and covariance matrix (model$vbeta). To be specified if model is NULL, together with coefs.
+##' @return dataset with predicted values; ready to be used with ggplot2
 
 eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
                       coefs=NULL, vcov=NULL){
