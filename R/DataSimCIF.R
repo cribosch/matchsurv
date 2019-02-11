@@ -11,8 +11,9 @@
 ##' @param gammax coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: $\gamma_1=0.1$, $\gamma_2=-0.2$. Note: some value might not work.
 ##' @param mean.link link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".
 ##' @param bias to simulate data with excess risk factor correlated with age
+##' @param print.cifs if information about the given cifs is needed
 ##' @author Cristina Boschini
-##' @return The function returns a dataset
+##' @return The function returns by default a dataset. if print.cifs=TRUE, the function returns a list withe the simulated dataset and a list of the startingc cumulative incidence functions.
 ##' @export
 
 sim.data.MatchCR<-function(nca,
@@ -20,7 +21,8 @@ sim.data.MatchCR<-function(nca,
                            cifs=NULL,
                            gammax=c(0.1,-0.2), #by default simulate two covariates, z can be 0,1,2. 
                            mean.link="log", 
-                           bias=FALSE
+                           bias=FALSE,
+                           print.cifs=FALSE
                            ){
   #browser()
   if (is.null(cifs)) {
@@ -112,7 +114,9 @@ sim.data.MatchCR<-function(nca,
     if (length(gammax)>1) data.table::setcolorder(dd, c("i", "j", "expo","X1","X2","agee","entry","exit","time","cause"))
     else data.table::setcolorder(dd, c("i", "j", "expo","X1","agee","entry","exit","time","cause"))
   } else data.table::setcolorder(dd, c("i", "j", "expo","agee","entry","exit","time","cause"))
-  return(dd)
+  if (!print.cifs) return(dd)
+  else return (list(data=dd,
+                    cifs=list(excess1,uF)))
 }
 ####}}} simMatchCR
 
