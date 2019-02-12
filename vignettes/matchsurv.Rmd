@@ -1,0 +1,230 @@
+---
+title: "matchsurv: excess risk estimation in matched cohort studies"
+author: "Cristina Boschini"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{matchsurv: excess risk estimation in matched cohort studies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+```
+
+`matchsurv` provides  `R` functions to estimate excess risk regression models on both the hazard and the cumulative incidence scale. 
+
+# Installation
+You can install `matchsurv` from `github` with:
+
+```{r, echo=TRUE}
+# install.packages("devtools")
+devtools::install_github("cribosch/matchsurv")
+```
+
+### libraries
+
+```{r}
+library(matchsurv)
+
+#other useful packages 
+library(timereg)
+library(geepack)
+library(ggplot2) # for the plot
+```
+
+These functions work with matched cohort studies where the outcome is *time-to-event*. The excess risk can be estimated in a survival setting on the hazard scale and in a cometing risk setting also in terms of cumulative incidence. Data can be simulated in both the two settings.
+
+# Excess hazard model
+
+## Data simulation
+
+We simulate matched cohort data in the survival setting with 5000 exposed subjects and 5 matched unexposed subjects for each exposed. 
+
+```{r}
+haz.data<-data.sim(5000,5)
+head(haz.data)
+```
+
+The option`competing=TRUE` of `data.sim` functions allows to estimate data in a competing risk setting where the excess risk is defined in terms of cause specific hazard. When `nullmod=TRUE`, the excess risk does not depend on covariates, so no covariates are simulated.  
+
+## Model estimation
+
+To get the model estimates we first need to set up the data correctly; both the two approaches work on the exposed-unexposed pair information. 
+
+```{r}
+set.hazd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=haz.data)
+head(set.hazd)
+```
+
+We suggest to set all the possible coviariates in the perdictor part of the formula; this is not the estimated model yet. The dataset we obtain with `compdata` will be used in the model estimation. 
+
+To estimate the model, run:
+
+```{r}
+
+exc.haz.mod<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=set.hazd)
+
+```
+
+Note that it is possible to specify possible strata or interactions. 
+
+## Results
+
+To visualise the estimated effects:
+
+```{r}
+
+summary(exc.haz.mod)
+
+```
+
+To estimate the cumulative baseline excess hazard:
+
+```{r}
+exccumhaz(exc.haz.mod, time = seq(0,25,5))
+```
+
+It is possible to specify a vector of timepoints where to estimate the cumulative baseline excess hazard. 
+To plot the estimated cumulative hazard, we can use the function `excplot`; the option `stratas=` allows to visualize only some strata (strata are identified with a number, 0 refers to the first stratum). The option `relsurv=TRUE` plots the relative survival estimated through the excess risk model. 
+
+```{r}
+excplot(exc.haz.mod)
+```
+
+A better overview of the function `excplot()` is given by `example("excplot")`.
+
+# Excess cumulative incidence model 
+
+## Data simulation
+
+Matched cohort data in a competing risk setting with two possible causes of failure are generated:
+
+```{r}
+
+cif.data<-sim.data.MatchCR(1000,5)
+head(cif.data)
+```
+
+
+## Model estimate
+
+### data set up
+
+```{r}
+tp<-c(0.5,1,2,5,10,15,25) # define vector of time points
+set.cifd<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+                   data=cif.data,
+                   cluster=i, #cluster ID
+                   idControl=j, #subject ID
+                   time.points = tp, #time points
+                   cens.formula = NULL, #censoring weight model
+                   event=1 #event of interest
+)
+head(set.cifd)
+```
+
+
+### GEE 
+
+```{r}
+exc.cif.mod<-geese(Rt~-1+factor(h)+X1+X2,
+                data=set.cifd,
+                family="gaussian", #error distribution
+                mean.link = "log", #link function for Rt
+                corstr="independence", #correlation structure
+                id=clust.num, #cluster vector
+                weights=weights #censoring weights
+                )
+
+```
+
+
+## Results 
+
+### predicted excess CIFs
+
+```{r}
+
+af<-paste0("-1+factor(h)+X1+X2") #model formula
+newd<-data.frame(expand.grid(h=tp,X1=c(0,1),X2=c(0.8,1.5,2.5))) # newdata
+# define the different subjects for whom the excess risk is predicted
+strata.levels<-factor(1:6, levels=1:6, 
+                      labels =paste0(rep("X1=",6),
+                                     expand.grid(X1=c(0,1),X2=c(0.8,1.5,2.5))[,1],
+                                     rep(", X2=",6),
+                                     expand.grid(X1=c(0,1),X2=c(0.8,1.5,2.5))[,2]))
+
+pred.exc.cif<-ecif.pred(exc.cif.mod,times = tp,dataset = newd, 
+                     formula = af, strata.levels = strata.levels)
+head(pred.exc.cif,8)
+
+```
+
+
+### the plot
+
+
+```{r}
+p<-ggplot()
+plot.exc.cif<-p+
+  geom_step(aes(x=time, y=lower.ci, alpha=0.1), data=pred.exc.cif,lty="dotted", size=0.7)+
+  geom_step(aes(x=time, y=upper.ci, alpha=0.1), data=pred.exc.cif,lty="dotted", size=0.7)+
+  geom_step(aes(x=time, y=cif),col="black", data=pred.exc.cif, size=0.8)+
+  scale_x_continuous(name="Time since entry",limits = c(0,30),breaks = seq(0,30,5), labels=seq(5,35,5))+
+  scale_y_continuous(name="Excess risk")+ 
+  facet_wrap(~strata,ncol = 2)+
+  geom_abline(slope = 0,intercept = 0, size=0.2)+
+  theme(legend.position = 'none');plot.exc.cif
+```
+
+### estimate effects
+
+```{r}
+
+ecif.coef(exc.cif.mod,times = tp, link = "log")
+
+```
+
+
+
+<!-- ## model estimate (cause 2) ----- -->
+<!-- set.data2<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, -->
+<!--                 data=data, -->
+<!--                 cluster=i, #cluster ID -->
+<!--                 idControl=j, #subject ID -->
+<!--                 time.points = tp, #time points -->
+<!--                 cens.formula = NULL, #censoring weight model -->
+<!--                 event=2 #event of interest -->
+<!--                 ) -->
+
+<!-- exc.mod2<-geese(Rt~-1+factor(h), #no covariate effects -->
+<!--                 data=set.data2, -->
+<!--                 family="gaussian", #error distribution -->
+<!--                 mean.link = "log", #link function for Rt -->
+<!--                 corstr="independence", #correlation structure -->
+<!--                 id=clust.num, #cluster vector -->
+<!--                 weights=weights #censoring weights -->
+<!--                 ) -->
+
+<!-- af<-paste0("-1+factor(h)") -->
+<!-- newd<-data.frame(h=tp) #no covariates -->
+<!-- pred.exc2<-ecif.pred(exc.mod2,times = tp,dataset = newd, -->
+<!--                      formula = af) -->
+<!-- head(pred.exc2,8) -->
+
+<!-- p<-ggplot() -->
+<!-- plot.exc2<-p+ -->
+<!--   geom_step(aes(x=time, y=lower.ci, alpha=0.1), data=pred.exc2,lty="dotted", size=0.7)+ -->
+<!--   geom_step(aes(x=time, y=upper.ci, alpha=0.1), data=pred.exc2,lty="dotted", size=0.7)+ -->
+<!--   geom_step(aes(x=time, y=cif),col="black", data=pred.exc2, size=0.8)+ -->
+<!--   scale_x_continuous(name="Time since entry",limits = c(0,30),breaks = seq(0,30,5), labels=seq(5,35,5))+ -->
+<!--   scale_y_continuous(name="Excess risk")+  -->
+<!--   geom_abline(slope = 0,intercept = 0, size=0.2)+ -->
+<!--   theme(legend.position = 'none');plot.exc2 -->
+

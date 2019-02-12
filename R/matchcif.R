@@ -360,8 +360,8 @@ Ft <- function(p,times,formula,newdata){
   return(lam)
 }
 
-##### new CIFpredict --- to use
-### {{{ eCIFpredict
+##### new CIFpredict --- to use (new name for package)
+### {{{ ecif.pred
 ##' Excess CIF prediction based on newdata and geepack::geese estimates.
 ##' @param model geese object. To be defined if coefs and vcov are null.
 ##' @param times vector of timepoints as the one used to estimate the GEE model
@@ -372,7 +372,7 @@ Ft <- function(p,times,formula,newdata){
 ##' @param vcov coefficient variance and covariance matrix (model$vbeta). To be specified if model is NULL, together with coefs.
 ##' @return dataset with predicted values; ready to be used with ggplot2
 ##' @export
-eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
+ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
                       coefs=NULL, vcov=NULL){
   #browser()
   if( is.null(model) & is.null(coefs) & is.null(vcov)) stop("please define model or coefs+vcov")
@@ -402,12 +402,53 @@ eCIFpredict<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
                  }
                  ))
     out<-data.table(time=rep(c(0,times),length(strata.levels)),strata=rep(strata.levels, each=length(times)+1),out)
-  } else out<-data.table(rbind(rep(0,5),cbind(time=times,estimate.output[[2]][,-5])))
+    colnames(out)[-c(1,2)]<-c("cif","se.cif","lower.ci","upper.ci")
+  } else {
+    out<-data.table(rbind(rep(0,5),cbind(time=times,estimate.output[[2]][,-5])))
+    colnames(out)[-1]<-c("cif","se.cif","lower.ci","upper.ci")
+  }
   
   return(data.table(out))
   
 }
 
-### }}} eCIFpredict
+### }}} ecif.pred
 
+
+### {{{ ecif.coef
+##' Excess CIF prediction based on newdata and geepack::geese estimates.
+##' @param model geese object. To be defined if coefs and vcov are null.
+##' @param times vector of timepoints as the one used to estimate the GEE model
+##' @param labels vector of parameter names
+##' @param link link used to estimate the model. Choose between c("log","logit","identity")
+##' @return table with coefficient estimates, sandwich standard error, function of coefficient for interpretation and p-value.
+##' @export
+ecif.coef<-function(model, times, link="log"){
+  require(tidyr)
+  require(dplyr)
+  if (is.null(times)) stop("Vector of time points needed")
+  summ<-summary(model)$mean
+  p<-nrow(summ)-length(times)
+  res<-summ[length(times)+(1:p), -3]
+  lev<-rownames(res)
+  
+  f.beta<-function(beta,f.link){
+    if (f.link %in% c("log","logit")) {
+      f<-exp(beta)
+    }
+    else stop("link not supported")
+    return(f)
+  }
+  
+  res <- res %>%
+    mutate("exp(estimate)"=sprintf("%0.2f",f.beta(estimate,link)),
+           estimate=sprintf("%0.2f", estimate),
+           san.se=sprintf("%0.2f", san.se),
+           p=sprintf("%0.4f", p)) 
+  rownames(res)<-lev
+
+  return(res)
+}
+
+### }}} ecif.coef
 

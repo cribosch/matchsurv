@@ -12,3 +12,7 @@ Depends: R (>= 3.3), survival, data.table
 Imports: lava (>= 1.5), Rcpp, plyr,dplyr,timereg (>= 1.9),mets
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
