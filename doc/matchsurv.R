@@ -8,7 +8,7 @@ requireNamespace("devtools")
 
 ## ---- echo=TRUE, results="hide",eval=FALSE-------------------------------
 #  # install.packages("devtools")
-#  devtools::install_github("cribosch/matchsurv")
+#  devtools::install_github("cribosch/matchsurv",build_vignettes = TRUE )
 
 ## ------------------------------------------------------------------------
 library(matchsurv)

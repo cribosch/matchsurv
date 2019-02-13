@@ -4,7 +4,7 @@ author: "Cristina Boschini"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{matchsurv: excess risk estimation in matched cohort studies}
+  %\VignetteIndexEntry{matchusrv: excess risk estimation in matched cohort studies}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,7 +25,7 @@ You can install `matchsurv` from `github` with:
 
 ```{r, echo=TRUE, results="hide",eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("cribosch/matchsurv")
+devtools::install_github("cribosch/matchsurv",build_vignettes = TRUE )
 ```
 
 ### libraries
