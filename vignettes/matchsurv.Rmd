@@ -4,7 +4,7 @@ author: "Cristina Boschini"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{matchsurv: excess risk estimation in matched cohort studies}
+  %\VignetteIndexEntry{matchusrv.Rmd}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
