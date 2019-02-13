@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 # matchsurv
 
-The goal of matchsurv is to estimate the cumulative excess risk for exposed individuals when matched survival data are available. 
+The goal of matchsurv is to estimate the cumulative excess risk for exposed individuals when matched survival data are available. Excess risk regression models are available on both hazard and cumulative incidence scale. More info in `vignette("matchsurv")`.
 
 
 ## Installation
@@ -26,45 +26,87 @@ You can install matchsurv from github with:
 devtools::install_github("cribosch/matchsurv")
 ```
 
-## Example
-
-### matched survival data
+and call the package with:
 
 ```{r callpackage, results='hide', warning=FALSE}
 library(matchsurv)
-```
-For each exposed individual we have a defined number of unexposed individuals, matched according to some relevant factors (the number of unexposed individuals per exposed can be different). 
 
-Here it is an example of the data:
-```{r datasim}
-d<-data.sim(5000,5)
-head(d,10)
+## other useful packages
+library(timereg)
+library(geepack)
+library(ggplot2)
 ```
 
-`matchsurv::data.sim` let you simulate some matched survival data; `competing=TRUE` will let you chose for a competing risk setting; when `nullmod=TRUE` no covariates are simulated.
+The package works with matched cohort data where the outcome on study is time-to-event. 
+For each exposed individual we have a defined number of unexposed individuals, matched according to some relevant factors (the number of unexposed individuals per exposed can be different). To simulate data:
+
+```{r datasim hazard}
+dhaz<-sim.data.MatchH(5000,5)
+head(dhaz,10)
+```
+
+Or when working with cumulative incidence functions:
+
+```{r datasim cif}
+dcif<-sim.data.MatchCR(1000,5)
+head(dcif, 10)
+```
+
+Further info about the function options are available through `vignette()` or `example()`.
 
 This is a basic example which shows you how to:
 
-1) estimate the proportional excess model 
-2) visualize your results - coefficient estimates and cumulative excess hazard plot
+1) estimate the excess risk 
+2) visualize your results - coefficient estimates and cumulative excess 
 
-### model estimate
+in both the two settings.
 
-First you need to set up your data in order to estimate the model
+## Model estimate
+
+### Excess hazard 
+
+Data set up
 
 ```{r compdata, results='hide'}
 example("compdata")
 ```
 
-`strata()` are not needed in here; you'll choose after how to specify your model. It is a good idea to use all the possible covariates at this step. New variables will be created, you'll need them in the following step.
-
-Then you can estimate your model:
+Model estimate
 
 ```{r modelest, results='hide'}
 example("matchpropexc")
 ```
 
-## model results
+### Excess cumulative incidence
+
+Data set up
+
+```{r}
+example("compcomp")
+
+```
+
+Model estimate based on GEE function `geepack::geese()`
+
+```{r}
+tp<-c(0.5,1,2,5,10,15,25)
+setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+data=dcif, cluster=i, idControl=j, time.points=tp, cens.formula=NULL, event=1)
+
+exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
+                    data=setdcif1,
+                    family="gaussian", #error distribution
+                    mean.link = "log", #link function for Rt
+                    corstr="independence", #correlation structure
+                    id=clust.num, #cluster vector
+                    weights=weights #censoring weights
+)
+```
+
+
+## Results
+
+### Excess hazard
 
 To visualize the coefficient estimates: `summary(model)`
 
@@ -81,4 +123,20 @@ To plot the cumulative baseline excess hazard:
 ```{r plots, results='hide', fig.show='hide', eval=FALSE}
 example("excplot")
 ```
+
+### Excess cumulative incidence
+
+To visualize the estimated effects: 
+
+```{r}
+example("ecif.coef")
+```
+
+To predict the excess cumulative incidence for different covariate values:
+
+```{r}
+example("ecif.pred")
+```
+
+Further info on plotting the results available in `vignette(matchsurv)`
 

@@ -14,7 +14,7 @@ sim.data.MatchCR(nca, ncont = 5, cifs = NULL, gammax = c(0.1, -0.2),
 
 \item{cifs}{list argument. Starting CIFs for: 1) 1st cause background risk, 2) 2nd cause background risk, 3) 1st cause excess risk, 4) 2nd cause excess risk. If cifs=NULL default quantities are used.}
 
-\item{gammax}{coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: $\gamma_1=0.1$, $\gamma_2=-0.2$. Note: some value might not work.}
+\item{gammax}{coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: \eqn{\gamma_1=0.1, \; \gamma_2=-0.2}. Note: some value might not work.}
 
 \item{mean.link}{link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".}
 

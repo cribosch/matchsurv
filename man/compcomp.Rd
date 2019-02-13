@@ -32,6 +32,16 @@ A setup dataset, ready for \code{geese}
 \description{
 Data structured for glm approach in competing risk setting
 }
+\examples{
+dcif<-sim.data.MatchCR(nca=1000, ncont=5)
+tp<-c(0.5,1,2,5,10,15,25)
+setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+ data=dcif, cluster=i, idControl=j, time.points=tp, cens.formula=NULL, event=1)
+head(setdcif1, 10)
+setdcif2<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+ data=dcif, cluster=i, idControl=j, time.points=tp, cens.formula=NULL, event=2)
+head(setdcif2, 10)
+}
 \author{
 Cristina Boschini
 }

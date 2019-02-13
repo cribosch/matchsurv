@@ -20,13 +20,19 @@ no output. use \code{summary(model)} to view the coefficient estimates.
 Excess risk paired survival model
 }
 \examples{
-dd<-data.sim(nca=5000, ncont=5)
-setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
+dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+names(setdhaz) #it is strongly recommended to check the names of your variables before estimating the model
+exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
 summary(exc.model)
-exc.model1<-matchpropexc(Surv(entry,exit,status)~1, data=setdd)
+### with competing risks
+dhazc<-sim.data.MatchH(nca=5000,ncont=5,competing=TRUE)
+setdhaz1<-compdata(Surv(time, status==1)~x+z+cc, clust=id, idControl=j, data=dhazc)
+exc.model1<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x)+cc, data=setdhaz1)
 summary(exc.model1)
+setdhaz2<-compdata(Surv(time, status==2)~x+z+cc, clust=id, idControl=j, data=dhazc)
+exc.model2<-matchpropexc(Surv(entry,exit,status)~1, data=setdhaz2)
+summary(exc.model2)
 }
 \author{
 Cristina Boschini

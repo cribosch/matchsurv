@@ -6,7 +6,7 @@
 # ##' @param clust vector clust indicator (one match.exposed for each exposed individual)
 # ##' @param ... Additional arguments to lower level funtions
 # ##' @examples
-# ##' dd<-data.sim(nca=5000, ncont=5)
+# ##' dd<-sim.data.MatchH(nca=5000, ncont=5)
 # ##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
 # ##' summary(setdd)
 # ##' @author Cristina Boschini
@@ -144,9 +144,9 @@
 ##' @param clust vector exposed indicator; it identifies the "cluster" (one exposed in each clust i)
 ##' @param ... Additional arguments to lower level funtions
 ##' @examples
-##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' summary(setdd)
+##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+##' setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+##' head(setdhaz, 10)
 ##' @author Cristina Boschini
 ##' @return A setup dataset, ready for \code{matchpropexc}
 ##' @export
@@ -422,13 +422,19 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @param ... Additional arguments to lower level funtions
 ##' @useDynLib matchsurv
 ##' @examples 
-##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' names(setdd) #it is strongly recommended to check the names of your variables before estimating the model
-##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
+##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+##' setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+##' names(setdhaz) #it is strongly recommended to check the names of your variables before estimating the model
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
 ##' summary(exc.model)
-##' exc.model1<-matchpropexc(Surv(entry,exit,status)~1, data=setdd)
+##' ### with competing risks
+##' dhazc<-sim.data.MatchH(nca=5000,ncont=5,competing=TRUE)
+##' setdhaz1<-compdata(Surv(time, status==1)~x+z+cc, clust=id, idControl=j, data=dhazc)
+##' exc.model1<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x)+cc, data=setdhaz1)
 ##' summary(exc.model1)
+##' setdhaz2<-compdata(Surv(time, status==2)~x+z+cc, clust=id, idControl=j, data=dhazc)
+##' exc.model2<-matchpropexc(Surv(entry,exit,status)~1, data=setdhaz2)
+##' summary(exc.model2)
 ##' @return no output. use \code{summary(model)} to view the coefficient estimates.
 ##' @author Cristina Boschini
 ##' @export
@@ -653,9 +659,9 @@ cumhazmc<-function(time, weight, S0, p, nevent, X, E, sigmaH=NULL, hessian, SEcu
 ##' @author Cristina Boschini
 ##' @return cumulative baseline excess hazard estimates. If the model has strata, the returned object will be a list. Estimated are computed at the defined time.
 ##' @examples 
-##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdd)
+##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+##' setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
 ##' cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 ##' cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 ##' #you can chose at which time-points to show the estimates
@@ -815,9 +821,9 @@ predict.matchpropexc <- function(object,
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Cristina 
 ##' @examples 
-##' dd<-data.sim(nca=5000, ncont=5)
-##' setdd<-compdata(Surv(time, status)~x+z+cc, data=dd, idControl = j, clust=id)
-##' m <- matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),data=setdd)
+##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+##' setdhaz<-compdata(Surv(time, status)~x+z+cc, data=dhaz, idControl = j, clust=id)
+##' m <- matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),data=setdhaz)
 ##' excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 ##' excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 ##' excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 

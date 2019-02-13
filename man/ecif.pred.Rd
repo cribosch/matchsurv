@@ -18,13 +18,40 @@ ecif.pred(model = NULL, times, formula, dataset, strata.levels = NULL,
 
 \item{strata.levels}{if CIF predicted for different strata, define strata levels}
 
-\item{coefs}{coefficient estimates (model$beta). To be specified if model is NULL}
+\item{coefs}{coefficient estimates (\code{model$beta}). To be specified if model is NULL}
 
-\item{vcov}{coefficient variance and covariance matrix (model$vbeta). To be specified if model is NULL, together with coefs.}
+\item{vcov}{coefficient variance and covariance matrix (\code{model$vbeta}). To be specified if model is NULL, together with coefs.}
 }
 \value{
 dataset with predicted values; ready to be used with ggplot2
 }
 \description{
 Excess CIF prediction based on newdata and geepack::geese estimates.
+}
+\examples{
+dcif<-sim.data.MatchCR(1000,5)
+tp<-c(0.5,1,2,5,10,15,25)
+setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
+                   data=dcif, cluster=i, idControl=j, time.points=tp,
+                   cens.formula=NULL, event=1)
+exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
+                    data=setdcif1,
+                    family="gaussian", #error distribution
+                    mean.link = "log", #link function for Rt
+                    corstr="independence", #correlation structure
+                    id=clust.num, #cluster vector
+                    weights=weights #censoring weights 
+                    )
+### prediction: 
+af<-paste0("-1+factor(h)+X1+X2") #model formula
+newd<-data.frame(expand.grid(h=tp,X1=c(0,1),X2=c(0.8,1.5,2.5))) # newdata
+# define the different subjects for whom the excess risk is predicted
+strata.levels<-factor(1:6, levels=1:6,
+                      labels =paste0(rep("X1=",6),
+                      expand.grid(X1=c(0,1),X2=c(0.8,1.5,2.5))[,1], 
+                      rep(", X2=",6),
+                      expand.grid(X1=c(0,1),X2=c(0.8,1.5,2.5))[,2]))
+pred.exc.cif<-ecif.pred(exc.cif.mod1,times = tp,dataset = newd,
+                        formula = af, strata.levels = strata.levels)
+head(pred.exc.cif,8)
 }

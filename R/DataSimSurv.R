@@ -3,8 +3,6 @@
 
 ##maybe you can add it later to the package. Let it here for now and recall it into your simulation file. 
 
-##Remember: probands=cases(1); controls goes from 2 to k+1. 
-
 ### {{{ dataset.sim
 
 dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
@@ -72,7 +70,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ### This is another function to simulate data based on pc.hazard function of timereg package. It is possible to simulate
 ### also cometing risk data. It is not possible to define the hazard. 
 
-####{{{ data.sim
+####{{{ sim.data.MatchH
 ##' Function to simulate macthed survival data
 ##' @param nca number of exposed individuals
 ##' @param ncont number of unexposed individuals for eac exposed (fixed number)
@@ -80,7 +78,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ##' @param nullmod if TRUE no covariates are simulated. By default 3 variables are simulated: two binomals and one continuous. 
 ##' @author Cristina Boschini
 ##' @export
- data.sim<- function(nca, #number of cases
+ sim.data.MatchH<- function(nca, #number of cases
                        ncont, #number of controls
                        competing=FALSE, #with a competing event
                        nullmod=FALSE){
@@ -176,6 +174,6 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   }
   return(dd)
  } 
- ###} data.sim
+ ###} sim.data.MatchH
  ###} dataset.sim
 

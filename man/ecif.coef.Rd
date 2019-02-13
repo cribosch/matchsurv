@@ -21,3 +21,19 @@ table with coefficient estimates, sandwich standard error, function of coefficie
 \description{
 Excess CIF prediction based on newdata and geepack::geese estimates.
 }
+\examples{
+dcif<-sim.data.MatchCR(1000,5)
+tp<-c(0.5,1,2,5,10,15,25)
+setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
+                   data=dcif, cluster=i, idControl=j, time.points=tp,
+                   cens.formula=NULL, event=1)
+exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
+                    data=setdcif1,
+                    family="gaussian", #error distribution
+                    mean.link = "log", #link function for Rt
+                    corstr="independence", #correlation structure
+                    id=clust.num, #cluster vector
+                    weights=weights #censoring weights 
+                    )
+ecif.coef(exc.cif.mod1,times = tp, link = "log")
+}

@@ -8,7 +8,7 @@
 ##' @param nca number of exposed individuals
 ##' @param ncont number of unexposed individuals for each exposed (fixed number; by default ncont=5)
 ##' @param cifs list argument. Starting CIFs for: 1) 1st cause background risk, 2) 2nd cause background risk, 3) 1st cause excess risk, 4) 2nd cause excess risk. If cifs=NULL default quantities are used. 
-##' @param gammax coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: $\gamma_1=0.1$, $\gamma_2=-0.2$. Note: some value might not work.
+##' @param gammax coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: \eqn{\gamma_1=0.1, \; \gamma_2=-0.2}. Note: some value might not work.
 ##' @param mean.link link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".
 ##' @param bias to simulate data with excess risk factor correlated with age
 ##' @param print.cifs if information about the given cifs is needed

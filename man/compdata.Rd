@@ -24,9 +24,9 @@ A setup dataset, ready for \code{matchpropexc}
 Data structured for matchpropexc
 }
 \examples{
-dd<-data.sim(nca=5000, ncont=5)
-setdd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dd)
-summary(setdd)
+dhaz<-sim.data.MatchH(nca=5000, ncont=5)
+setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+head(setdhaz, 10)
 }
 \author{
 Cristina Boschini
