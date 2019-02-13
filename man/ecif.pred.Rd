@@ -31,10 +31,10 @@ Excess CIF prediction based on newdata and geepack::geese estimates.
 \examples{
 dcif<-sim.data.MatchCR(1000,5)
 tp<-c(0.5,1,2,5,10,15,25)
-setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
+setdcif1<-compcomp(timereg::Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
                    data=dcif, cluster=i, idControl=j, time.points=tp,
                    cens.formula=NULL, event=1)
-exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
+exc.cif.mod1<-geepack::geese(Rt~-1+factor(h)+X1+X2,
                     data=setdcif1,
                     family="gaussian", #error distribution
                     mean.link = "log", #link function for Rt

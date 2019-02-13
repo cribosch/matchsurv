@@ -8,11 +8,25 @@ Maintainer: Cristina Boschini <crbo@sund.ku.dk>
 Description: tools for estimating the excess risk of exposed subjects when matched survival data are available.
 License: GPL (>= 2)
 LinkingTo: Rcpp, RcppArmadillo
-Depends: R (>= 3.3), survival, data.table
-Imports: lava (>= 1.5), Rcpp, plyr,dplyr,timereg (>= 1.9),mets
+Depends: 
+    R (>= 3.3),
+    survival,
+    data.table,
+    tidyr
+Imports: 
+    lava (>= 1.5),
+    Rcpp,
+    plyr,
+    dplyr,
+    timereg,
+    mets,
+    rlang
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2,
+    geepack,
+    devtools
 VignetteBuilder: knitr

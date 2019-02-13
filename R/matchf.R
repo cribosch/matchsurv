@@ -1,3 +1,7 @@
+### global variables
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("surv"))  
+
+
 # ### {{{ compdata
 # ##' Data structured for matchpropexc
 # ##' @param formula formula with 'Surv' outcome (see \code{coxph}); avoid using strata() or factor()
@@ -424,8 +428,10 @@ matchpropexc0 <- function(X,entry, exit, status, weight,
 ##' @examples 
 ##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
 ##' setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
-##' names(setdhaz) #it is strongly recommended to check the names of your variables before estimating the model
-##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
+##' names(setdhaz) # it is strongly recommended to check the 
+##'                #names of your variables before estimating the model
+##' exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),
+##'                         data=setdhaz)
 ##' summary(exc.model)
 ##' ### with competing risks
 ##' dhazc<-sim.data.MatchH(nca=5000,ncont=5,competing=TRUE)
@@ -819,6 +825,8 @@ predict.matchpropexc <- function(object,
 ##' @param relsurv set to FALSE. If TRUE relative survival curves are plotted.
 ##' @param hline set to TRUE. An horizontal line is plotted (1 if relative survival, 0 if excess risk)
 ##' @param ... Additional arguments to lower level funtions
+##' @importFrom graphics lines plot abline 
+##' @importFrom grDevices rgb col2rgb
 ##' @author Cristina 
 ##' @examples 
 ##' dhaz<-sim.data.MatchH(nca=5000, ncont=5)
@@ -995,6 +1003,7 @@ excplot  <- function(x, se=FALSE,
 
 }# }}} 
 
+##' @importFrom graphics plot 
 ##' @export
 lines.matchpropexc <- function(x,...,add=TRUE) excplot(x,...,add=add)
 
@@ -1002,6 +1011,7 @@ lines.matchpropexc <- function(x,...,add=TRUE) excplot(x,...,add=add)
 
 ###{{{ plot
 
+##' @importFrom graphics plot lines 
 ##' @export
 plot.matchpropexc  <- function(x,relsurv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
   if (!is.null(X) && nrow(X)>1) {

@@ -2,6 +2,8 @@
 ## matched data in a competing risk setting, based
 ## on the cumulative incidence scale
 
+### global variables
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("exit","i","j","agee"))  
 
 ####{{{ simMatchCR
 ##' Function to simulate matchced survival data in competing risk setting based on cumulative incidence functions
@@ -12,6 +14,8 @@
 ##' @param mean.link link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".
 ##' @param bias to simulate data with excess risk factor correlated with age
 ##' @param print.cifs if information about the given cifs is needed
+##' @importFrom utils tail
+##' @importFrom stats model.matrix as.formula
 ##' @author Cristina Boschini
 ##' @return The function returns by default a dataset. if print.cifs=TRUE, the function returns a list withe the simulated dataset and a list of the startingc cumulative incidence functions.
 ##' @export
@@ -184,7 +188,7 @@ simexpo<-function(F0,
   if(!is.null(gamma)) {
     X1<-rbinom(1,1,0.5)  # Z<-1 #
     if (length(gamma)>1) {
-      X2<-rlnorm(1,mean=0.3,sd=0.2)
+      X2<-rlnorm(1,meanlog =0.3,sdlog =0.2)
       twocovs<-TRUE
     }
   } else if (biass) X1<-rbinom(1,1,0.5)

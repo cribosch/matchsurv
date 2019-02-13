@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+requireNamespace("devtools")
 ```
 
 `matchsurv` provides  `R` functions to estimate excess risk regression models on both the hazard and the cumulative incidence scale. 
@@ -47,11 +48,11 @@ These functions work with matched cohort studies where the outcome is *time-to-e
 We simulate matched cohort data in the survival setting with 5000 exposed subjects and 5 matched unexposed subjects for each exposed. 
 
 ```{r}
-haz.data<-data.sim(5000,5)
+haz.data<-sim.data.MatchH(5000,5)
 head(haz.data)
 ```
 
-The option`competing=TRUE` of `data.sim` functions allows to estimate data in a competing risk setting where the excess risk is defined in terms of cause specific hazard. When `nullmod=TRUE`, the excess risk does not depend on covariates, so no covariates are simulated.  
+The option`competing=TRUE` of `sim.data.MatchH` functions allows to estimate data in a competing risk setting where the excess risk is defined in terms of cause specific hazard. When `nullmod=TRUE`, the excess risk does not depend on covariates, so no covariates are simulated.  
 
 ## Model estimation
 

@@ -4,6 +4,16 @@
 ### incidence function in a matched cohort.
 ### It is similar to compdata but for CIF
 
+
+#globalVariables
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("V1",
+                                                        "uexit","ucause",
+                                                        "eexit","ecause", 
+                                                        "clust.num","weightedo",
+                                                        "Rt","subj","h",
+                                                        "pexittime", "pcause",
+                                                        "weights_","cw_","cw"))
+
 ### {{{ compcomp
 ##' Data structured for glm approach in competing risk setting
 ##' @param formula formula with 'Event' outcome (see \code{timereg} package); time stands for the start time, while time2 stands for the stop time. cause=1 will be considered as the event of interest
@@ -15,13 +25,16 @@
 ##' @param cens.formula useful to estimate the weights when censoring is present. no quotes, add something like ~age+year
 ##' @param cens.code default is 0
 ##' @param event in which event are you interested in?
+##' @import data.table
+##' @import stats
+##' @import survival
 ##' @examples
 ##' dcif<-sim.data.MatchCR(nca=1000, ncont=5)
 ##' tp<-c(0.5,1,2,5,10,15,25)
-##' setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+##' setdcif1<-compcomp(timereg::Event(time=FALSE,time2=time,cause=cause)~X1+X2,
 ##'  data=dcif, cluster=i, idControl=j, time.points=tp, cens.formula=NULL, event=1)
 ##' head(setdcif1, 10)
-##' setdcif2<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2,
+##' setdcif2<-compcomp(timereg::Event(time=FALSE,time2=time,cause=cause)~X1+X2,
 ##'  data=dcif, cluster=i, idControl=j, time.points=tp, cens.formula=NULL, event=2)
 ##' head(setdcif2, 10)
 ##' @author Cristina Boschini
@@ -236,8 +249,8 @@ prep.match.comp.risk<-function (data, times = NULL,
         trunc.dist$surv <- c(rev(trunc.dist$surv)[-1],1) #reverse the surv, delete the first 0 and add 1 at the end
         #in this way you have like a cumulative hazard 
         if (trunc.mintau == TRUE)
-          Lfit <- Cpred(cbind(trunc.dist$time, trunc.dist$surv), pmin(mtt, out[, pexittime]))
-        else Lfit <- Cpred(cbind(trunc.dist$time, trunc.dist$surv),out[, pexittime]) #predict the cumulative hazard value according 
+          Lfit <- timereg::Cpred(cbind(trunc.dist$time, trunc.dist$surv), pmin(mtt, out[, pexittime]))
+        else Lfit <- timereg::Cpred(cbind(trunc.dist$time, trunc.dist$surv),out[, pexittime]) #predict the cumulative hazard value according 
         #to the exit times of the pair: the distribution of the cumulative hazard is defined on the range of the delay entry.
         Lw <- Lfit[, 2] #these are the weights due to delay entry. 
         cformula<-"Surv(eentrytime, pexittime, pcause==0)~+1"
@@ -249,7 +262,7 @@ prep.match.comp.risk<-function (data, times = NULL,
       ud.cens <- survfit(as.formula(cformula), data =out)
       Gfit <- cbind(ud.cens$time, ud.cens$surv)
       Gfit <- rbind(c(0, 1), Gfit) ## Gfit is the censoring function
-      Gcx <- Cpred(Gfit, pmin(mtt, out[, pexittime]), strict = TRUE)[,2] #predict the censoring function at given timepoints, get just the function value, not the time
+      Gcx <- timereg::Cpred(Gfit, pmin(mtt, out[, pexittime]), strict = TRUE)[,2] #predict the censoring function at given timepoints, get just the function value, not the time
       weights <- 1/(Lw * Gcx)
       cweights <- Gcx
       tweights <- Lw
@@ -272,9 +285,9 @@ prep.match.comp.risk<-function (data, times = NULL,
           trunc.dist$time <- rev(-trunc.dist$time)
           trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
           if (trunc.mintau == TRUE)
-            Lfit <- Cpred(cbind(trunc.dist$time, trunc.dist$surv),
+            Lfit <- timereg::Cpred(cbind(trunc.dist$time, trunc.dist$surv),
                           pmin(mtt, outs[, pexittime]))
-          else Lfit <- Cpred(cbind(trunc.dist$time, trunc.dist$surv),
+          else Lfit <- timereg::Cpred(cbind(trunc.dist$time, trunc.dist$surv),
                              outs[, pexittime])
           Lw <- Lfit[, 2]
           cformula<-"Surv(eentrytimes, pexittime, pcause==0)~+1"
@@ -286,7 +299,7 @@ prep.match.comp.risk<-function (data, times = NULL,
         ud.cens <- survfit(as.formula(cformula), data=outs)
         Gfit <- cbind(ud.cens$time, ud.cens$surv)
         Gfit <- rbind(c(0, 1), Gfit)
-        Gcx <- Cpred(Gfit, pmin(mtt, outs[, pexittime]),strict = TRUE)[, 2]
+        Gcx <- timereg::Cpred(Gfit, pmin(mtt, outs[, pexittime]),strict = TRUE)[, 2]
         weights[who] <- 1/(Lw * Gcx)
         cweights[who] <- Gcx
         tweights[who] <- Lw
@@ -299,8 +312,8 @@ prep.match.comp.risk<-function (data, times = NULL,
       baseout<- basehaz(trunc.model, centered = FALSE)
       baseout <- cbind(rev(-baseout$time), rev(baseout$hazard))
       if (trunc.mintau == TRUE)
-        Lfit <- Cpred(baseout, pmin(mtt, out[, pexittime]))[,-1]
-      else Lfit <- Cpred(baseout, out[, pexittime])[, -1]
+        Lfit <- timereg::Cpred(baseout, pmin(mtt, out[, pexittime]))[,-1]
+      else Lfit <- timereg::Cpred(baseout, out[, pexittime])[, -1]
       RR <- exp(as.matrix(X) %*% coef(trunc.model))
       Lfit <- exp(-Lfit * RR)
       Lw <- Lfit
@@ -313,7 +326,7 @@ prep.match.comp.risk<-function (data, times = NULL,
     cens.model <- coxph(as.formula(cformula), data=out)
     baseout <- basehaz(cens.model, centered = FALSE)
     baseout <- cbind(baseout$time, baseout$hazard)
-    Gfit <- Cpred(baseout, pmin(mtt, out[, pexittime]), strict = TRUE)[,2]
+    Gfit <- timereg::Cpred(baseout, pmin(mtt, out[, pexittime]), strict = TRUE)[,2]
     RR <- exp(as.matrix(X) %*% coef(cens.model))
     Gfit <- exp(-Gfit * RR)
     weights <- 1/(Lw * Gfit)
@@ -379,13 +392,15 @@ Ft <- function(p,times,formula,newdata){
 ##' @param strata.levels if CIF predicted for different strata, define strata levels
 ##' @param coefs coefficient estimates (\code{model$beta}). To be specified if model is NULL
 ##' @param vcov coefficient variance and covariance matrix (\code{model$vbeta}). To be specified if model is NULL, together with coefs.
+##' @import tidyr
+##' @importFrom dplyr mutate
 ##' @examples 
 ##' dcif<-sim.data.MatchCR(1000,5)
 ##' tp<-c(0.5,1,2,5,10,15,25)
-##' setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
+##' setdcif1<-compcomp(timereg::Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
 ##'                    data=dcif, cluster=i, idControl=j, time.points=tp,
 ##'                    cens.formula=NULL, event=1)
-##' exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
+##' exc.cif.mod1<-geepack::geese(Rt~-1+factor(h)+X1+X2,
 ##'                     data=setdcif1,
 ##'                     family="gaussian", #error distribution
 ##'                     mean.link = "log", #link function for Rt
@@ -406,7 +421,7 @@ Ft <- function(p,times,formula,newdata){
 ##'                         formula = af, strata.levels = strata.levels)
 ##' head(pred.exc.cif,8)
 ##' @return dataset with predicted values; ready to be used with ggplot2
-##' @export
+##' @export 
 ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
                       coefs=NULL, vcov=NULL){
   #browser()
@@ -454,28 +469,26 @@ ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
 ##' Excess CIF prediction based on newdata and geepack::geese estimates.
 ##' @param model geese object. To be defined if coefs and vcov are null.
 ##' @param times vector of timepoints as the one used to estimate the GEE model
-##' @param labels vector of parameter names
 ##' @param link link used to estimate the model. Choose between c("log","logit","identity")
+##' @importFrom rlang .data
 ##' @examples 
 ##' dcif<-sim.data.MatchCR(1000,5)
 ##' tp<-c(0.5,1,2,5,10,15,25)
-##' setdcif1<-compcomp(Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
+##' setdcif1<-compcomp(timereg::Event(time=FALSE,time2=time,cause=cause)~X1+X2, 
 ##'                    data=dcif, cluster=i, idControl=j, time.points=tp,
 ##'                    cens.formula=NULL, event=1)
-##' exc.cif.mod1<-geese(Rt~-1+factor(h)+X1+X2,
-##'                     data=setdcif1,
-##'                     family="gaussian", #error distribution
-##'                     mean.link = "log", #link function for Rt
-##'                     corstr="independence", #correlation structure
-##'                     id=clust.num, #cluster vector
-##'                     weights=weights #censoring weights 
-##'                     )
+##' exc.cif.mod1<-geepack::geese(Rt~-1+factor(h)+X1+X2,
+##'                              data=setdcif1,
+##'                              family="gaussian", #error distribution
+##'                              mean.link = "log", #link function for Rt
+##'                              corstr="independence", #correlation structure
+##'                              id=clust.num, #cluster vector
+##'                              weights=weights #censoring weights 
+##'                              )
 ##' ecif.coef(exc.cif.mod1,times = tp, link = "log")
 ##' @return table with coefficient estimates, sandwich standard error, function of coefficient for interpretation and p-value.
 ##' @export
 ecif.coef<-function(model, times, link="log"){
-  require(tidyr)
-  require(dplyr)
   if (is.null(times)) stop("Vector of time points needed")
   summ<-summary(model)$mean
   p<-nrow(summ)-length(times)
@@ -490,11 +503,10 @@ ecif.coef<-function(model, times, link="log"){
     return(f)
   }
   
-  res <- res %>%
-    mutate("exp(estimate)"=sprintf("%0.2f",f.beta(estimate,link)),
-           estimate=sprintf("%0.2f", estimate),
-           san.se=sprintf("%0.2f", san.se),
-           p=sprintf("%0.4f", p)) 
+  dplyr::mutate(res, "exp(estimate)"=sprintf("%0.2f",f.beta(.data$estimate,link)),
+           estimate=sprintf("%0.2f", .data$estimate),
+           san.se=sprintf("%0.2f", .data$san.se),
+           p=sprintf("%0.4f", .data$p)) 
   rownames(res)<-lev
 
   return(res)

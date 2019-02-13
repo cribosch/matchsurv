@@ -22,8 +22,10 @@ Excess risk paired survival model
 \examples{
 dhaz<-sim.data.MatchH(nca=5000, ncont=5)
 setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
-names(setdhaz) #it is strongly recommended to check the names of your variables before estimating the model
-exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
+names(setdhaz) # it is strongly recommended to check the 
+               #names of your variables before estimating the model
+exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),
+                        data=setdhaz)
 summary(exc.model)
 ### with competing risks
 dhazc<-sim.data.MatchH(nca=5000,ncont=5,competing=TRUE)
