@@ -81,7 +81,7 @@ example("matchpropexc")
 
 Data set up
 
-```{r}
+```{r, results="hide"}
 example("compcomp")
 
 ```
@@ -128,15 +128,15 @@ example("excplot")
 
 To visualize the estimated effects: 
 
-```{r}
+```{r,results='hide',message=FALSE, results="hide"}
 example("ecif.coef")
 ```
 
 To predict the excess cumulative incidence for different covariate values:
 
-```{r}
+```{r,results="hide"}
 example("ecif.pred")
 ```
 
-Further info on plotting the results available in `vignette(matchsurv)`
+Further info on plotting the results available in `vignette("matchsurv")`
 
