@@ -23,7 +23,7 @@ requireNamespace("devtools")
 # Installation
 You can install `matchsurv` from `github` with:
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, results="hide",eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("cribosch/matchsurv")
 ```
