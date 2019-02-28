@@ -741,12 +741,12 @@ ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
     strata.length<-ldply(exc.list, function(x) nrow(x))[,2]
     exc<-data.table(do.call("rbind",exc.list),strata=rep(strata.names,times=strata.length))
   } else exc<-data.table(exc.list)
-  exc[, upper.ci:=chaz+level*se.chaz]
   exc[, lower.ci:=chaz-level*se.chaz]
+  exc[, upper.ci:=chaz+level*se.chaz]
   if (relsurv){
     exc[, relsurv:=exp(-chaz)]
-    exc[, urelsurv.ci :=exp(-(chaz-level*se.chaz))]
-    exc[, lrelsurv.ci :=exp(-(chaz-+evel*se.chaz))]
+    exc[, low.relsurv.ci :=exp(-(chaz+level*se.chaz))]
+    exc[, up.relsurv.ci :=exp(-(chaz-level*se.chaz))]
   }
   return(exc)
 } 
