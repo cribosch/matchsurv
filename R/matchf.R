@@ -730,7 +730,7 @@ exccumhaz<-function(object, strata=object$strata, time=NULL,
 ##' @param level CI level
 ##' @author Cristina Boschini
 ##' @return data table to be easily used in ggplot2
-
+##' @export
 ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
   exc.list<-exccumhaz(object,time=time)
   level <- -qnorm((1-level)/2)
