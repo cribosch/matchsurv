@@ -735,7 +735,7 @@ ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
   exc.list<-exccumhaz(object,time=time)
   level <- -qnorm((1-level)/2)
   strata<-FALSE
-  if (!is.null(object$strta)) strata<-TRUE
+  if (!is.null(object$strata)) strata<-TRUE
   if (strata) {
     strata.names<-attributes(exc.list)$names
     strata.length<-ldply(exc.list, function(x) nrow(x))
