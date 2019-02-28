@@ -722,6 +722,38 @@ exccumhaz<-function(object, strata=object$strata, time=NULL,
 
 ### }}} cumhaz
 
+### {{{ ehaz.plot
+##' Baseline cumulative excess estimates arranged to be plotted with ggplot2
+##' @param object model estimated with matchpropexc
+##' @param time if baseline hazed should be visualized only at specific time points
+##' @param relsurv if relative survival quantities should be computed
+##' @param level CI level
+##' @author Cristina Boschini
+##' @return data table to be easily used in ggplot2
+
+ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
+  exc.list<-exccumhaz(object,time=time)
+  level <- -qnorm((1-level)/2)
+  strata<-FALSE
+  if (!is.null(object$strta)) strata<-TRUE
+  if (strata) {
+    strata.names<-attributes(exc.list)$names
+    strata.length<-ldply(exc.list, function(x) nrow(x))
+    exc<-data.table(do.call("rbind",exc.list),strata=rep(strata.names,times=strata.length))
+  } else exc<-data.table(exc.list)
+  exc[, upper.ci:=chaz+level*se.chaz]
+  exc[, lower.ci:=chaz-level*se.chaz]
+  if (relsurv){
+    exc[, relsurv:=exp(-chaz)]
+    exc[, urelsurv.ci :=exp(-(chaz-level*se.chaz))]
+    exc[, lrelsurv.ci :=exp(-(chaz-+evel*se.chaz))]
+  }
+  return(exc)
+} 
+  
+
+### }}}
+
 
 ###{{{ predict 
 
