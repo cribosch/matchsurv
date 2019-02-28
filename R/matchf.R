@@ -738,7 +738,7 @@ ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
   if (!is.null(object$strata)) strata<-TRUE
   if (strata) {
     strata.names<-attributes(exc.list)$names
-    strata.length<-ldply(exc.list, function(x) nrow(x))
+    strata.length<-ldply(exc.list, function(x) nrow(x))[,2]
     exc<-data.table(do.call("rbind",exc.list),strata=rep(strata.names,times=strata.length))
   } else exc<-data.table(exc.list)
   exc[, upper.ci:=chaz+level*se.chaz]
