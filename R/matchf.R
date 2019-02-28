@@ -197,7 +197,7 @@ compdata<-function(formula, data, clust, idControl,...){
   cord <- order(idControl,clust)
   #browser()
   if(data.table::is.data.table(data)) {
-    X <- data[1,attributes(Terms)$term.labels, with=FALSE]
+    X <- data[,attributes(Terms)$term.labels, with=FALSE]
     #browser()
     # if (ncol(X)!=0) {
     #   Xcases<-Xcases[cord]
@@ -206,13 +206,13 @@ compdata<-function(formula, data, clust, idControl,...){
     # }
     # 
   } else {
-    X<-data[1,attributes(Terms)$term.labels, drop=FALSE]
+    X<-data[,attributes(Terms)$term.labels, drop=FALSE]
     #Xcases<-data.frame(X,clust,idControl, stringsAsFactors = FALSE)
   }
   if (ncol(X)!=0){
     Xcases<-data.frame(X,clust,idControl, stringsAsFactors = FALSE)
     Xcases<-Xcases[cord,]
-    Xcases<-Xcases[Xcases$idControl==1,-ncol(Xcases)]
+    Xcases<-Xcases[Xcases$idControl==1,-ncol(Xcases)][1,]
   }
   
 
