@@ -4,7 +4,7 @@
 \alias{ecif.coef}
 \title{Excess CIF prediction based on newdata and geepack::geese estimates.}
 \usage{
-ecif.coef(model, times, link = "log")
+ecif.coef(model, times, link = "log", level = 0.95)
 }
 \arguments{
 \item{model}{geese object. To be defined if coefs and vcov are null.}

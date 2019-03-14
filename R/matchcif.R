@@ -488,12 +488,13 @@ ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
 ##' ecif.coef(exc.cif.mod1,times = tp, link = "log")
 ##' @return table with coefficient estimates, sandwich standard error, function of coefficient for interpretation and p-value.
 ##' @export
-ecif.coef<-function(model, times, link="log"){
+ecif.coef<-function(model, times, link="log", level=0.95){
   if (is.null(times)) stop("Vector of time points needed")
   summ<-summary(model)$mean
   p<-nrow(summ)-length(times)
   res<-summ[length(times)+(1:p), -3]
   lev<-rownames(res)
+  z<-qnorm(1-(1-level)/2)
   
   f.beta<-function(beta,f.link){
     if (f.link %in% c("log","logit")) {
@@ -502,12 +503,20 @@ ecif.coef<-function(model, times, link="log"){
     else stop("link not supported")
     return(f)
   }
+
+  res<-dplyr::mutate(res, 
+                     lower.ci=(.data$estimate-z*.data$san.se),
+                     upper.ci=(.data$estimate+z*.data$san.se))
   
-  dplyr::mutate(res, "exp(estimate)"=sprintf("%0.2f",f.beta(.data$estimate,link)),
-           estimate=sprintf("%0.2f", .data$estimate),
-           san.se=sprintf("%0.2f", .data$san.se),
-           p=sprintf("%0.4f", .data$p)) 
+  res<-dplyr::mutate(res,
+                     coef=sprintf("%0.4f", .data$estimate),
+                     "san.se(coef)"=sprintf("%0.4f", .data$san.se),
+                     "f(coef)"=sprintf("%0.4f",f.beta(.data$estimate,link)),
+                     lower.f.ci=sprintf("%0.4f",f.beta(.data$lower.ci,link)),
+                     upper.f.ci=sprintf("%0.4f",f.beta(.data$upper.ci,link)),
+                     p=sprintf("%0.4f", .data$p)) 
   rownames(res)<-lev
+  res<-res[, c("coef","san.se(coef)","f(coef)","lower.f.ci","upper.f.ci","p")]
 
   return(res)
 }
