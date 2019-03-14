@@ -510,13 +510,13 @@ ecif.coef<-function(model, times, link="log", level=0.95){
   
   res<-dplyr::mutate(res,
                      coef=sprintf("%0.4f", .data$estimate),
-                     "san.se(coef)"=sprintf("%0.4f", .data$san.se),
+                     "se(coef)"=sprintf("%0.4f", .data$san.se),
                      "f(coef)"=sprintf("%0.4f",f.beta(.data$estimate,link)),
                      lower.f.ci=sprintf("%0.4f",f.beta(.data$lower.ci,link)),
                      upper.f.ci=sprintf("%0.4f",f.beta(.data$upper.ci,link)),
                      p=sprintf("%0.4f", .data$p)) 
   rownames(res)<-lev
-  res<-res[, c("coef","san.se(coef)","f(coef)","lower.f.ci","upper.f.ci","p")]
+  res<-res[, c("coef","se(coef)","f(coef)","lower.f.ci","upper.f.ci","p")]
 
   return(res)
 }
