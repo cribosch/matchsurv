@@ -87,9 +87,9 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   n <- nca
   
   ### covariates
-  x <- rbinom(n,1,0.6)
-  sa <- 7
-  entry <- alder <- (runif(n)*sa)*(x==1)+ (x==0)*((8+runif(n)*(sa+5)))
+  #x <- rbinom(n,1,0.6)
+  #sa <- 7
+  entry <- alder <- runif(n)*20+5
   #other covariates
   if(!nullmod) {
     z <- rbinom(n,1,0.8)
@@ -167,7 +167,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   )
   if (!nullmod) {
     dd <- data.frame(dd,
-                     x=c(rep(x,ncont+1)),
+                     #x=c(rep(x,ncont+1)),
                      z=c(rep(z,ncont+1)),
                      cc=c(rep(cc,ncont+1))
     )
