@@ -150,12 +150,19 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
   
   if (competing) {
     excess2 <-t(c(1,0.8)*t(excess1))
-    if(!nullmod) {
+    case21 <- timereg::pc.hazard(back2,n=n,entry=entry)
+    
+  if(!nullmod){
       rr <- exp(z*0.25)
       case22 <- timereg::pc.hazard(excess2,rr=rr)
-    } else  case22 <- timereg::pc.hazard(excess2,n=n)
-    case11$status <- ifelse(case11$dur<case22$time, case11$status, 2*case22$status)
-    case11$dur <- pmin(case11$dur, case22$time)
+    } else case22 <- timereg::pc.hazard(excess2,n=n)
+    
+    case21$dur <- case21$time-case21$entry
+    case21$dur  <- pmin(case21$dur,case22$time) 
+    case21$status <- ifelse(case21$dur<case22$time,case21$status,case22$status)
+    
+    case11$status <- ifelse(case11$dur<case21$dur, case11$status, 2*case21$status)
+    case11$dur <- pmin(case11$dur, case21$dur)
   }
   
   ## complete dataset
