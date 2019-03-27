@@ -81,15 +81,19 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
  sim.data.MatchH<- function(nca, #number of cases
                        ncont, #number of controls
                        competing=FALSE, #with a competing event
-                       nullmod=FALSE){
+                       nullmod=FALSE,
+                       bias=FALSE){
   #browser()
 
   n <- nca
   
   ### covariates
-  #x <- rbinom(n,1,0.6)
-  #sa <- 7
   entry <- alder <- runif(n)*20+5
+  if (bias){
+    x <- rbinom(n,1,0.6)
+    sa <- 5
+    entry <- alder <- (runif(n)*sa+5)*(x==1)+ (x==0)*((runif(n)*sa+15))
+  }
   #other covariates
   if(!nullmod) {
     z <- rbinom(n,1,0.8)
