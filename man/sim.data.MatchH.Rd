@@ -4,7 +4,8 @@
 \alias{sim.data.MatchH}
 \title{Function to simulate macthed survival data}
 \usage{
-sim.data.MatchH(nca, ncont, competing = FALSE, nullmod = FALSE)
+sim.data.MatchH(nca, ncont, competing = FALSE, nullmod = FALSE,
+  bias = FALSE)
 }
 \arguments{
 \item{nca}{number of exposed individuals}
@@ -14,6 +15,8 @@ sim.data.MatchH(nca, ncont, competing = FALSE, nullmod = FALSE)
 \item{competing}{if TRUE a competing cause is considered}
 
 \item{nullmod}{if TRUE no covariates are simulated. By default 3 variables are simulated: two binomals and one continuous.}
+
+\item{bias}{if TRUE age is correlated with a variable that it's not used to simulate the data}
 }
 \description{
 Function to simulate macthed survival data

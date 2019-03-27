@@ -76,6 +76,7 @@ dataset.sim<-function(alpha0,lambda0,n,k,gamma,betacoef,
 ##' @param ncont number of unexposed individuals for eac exposed (fixed number)
 ##' @param competing if TRUE a competing cause is considered
 ##' @param nullmod if TRUE no covariates are simulated. By default 3 variables are simulated: two binomals and one continuous. 
+##' @param bias if TRUE age is correlated with a variable that it's not used to simulate the data
 ##' @author Cristina Boschini
 ##' @export
  sim.data.MatchH<- function(nca, #number of cases
