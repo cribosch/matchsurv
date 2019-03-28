@@ -166,7 +166,7 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
         },.id = NULL)
     } else {
       mm<-plyr::adply(time.points,1, function(x) { 
-        browser()
+        #browser()
       i2out <- prep.match.comp.risk(d3,times = x,
                                     eentrytime = NULL, uentrytime=NULL,
                                     eexittime = "eexit", uexittime="uexit", 
