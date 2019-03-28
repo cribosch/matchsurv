@@ -160,8 +160,8 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                                       cens.code = cens.code, cens.formula = cens.formula, strata = strata)
         
         Rt <- (i2out[,eexit ] <x) * (i2out[, ecause] == 1)-(i2out[,uexit ] <x) * (i2out[, ucause] == 1)
-        nocens <- ((i2out[, eexit] < x)  | (i2out[, uexit] < x))
-        i2out<-cbind(i2out, Rt, h=x, nocens)
+        i2out[, ci:=ifelse(ecause!=0 & ucause!=0,Inf,min(eexit[ecause==0],uexit[ucause==0])),by=subj]
+        nocens <- (i2out[, ci] >= x) 
         return(i2out)
         },.id = NULL)
     } else {
