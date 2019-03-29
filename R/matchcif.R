@@ -234,10 +234,16 @@ prep.match.comp.risk<-function (data, times = NULL,
   
   trunc.model <- cens.model <- NULL
   #browser()
-  
-  out[, pexittime:=pmin(get(eexittime), get(uexittime))]
-  out[, pcause:=ifelse(pexittime==get(eexittime),ecause,ucause)]
-  #out[pexittime==0, pexittime:=pexittime+runif(1,0,0.002)] 
+  out[, pcause:=ifelse(ecause!=0 & ucause!=0,1,0)]
+  out[, pexittime:=ifelse(pcause==0,ifelse(ecause==0,
+                                           ifelse(ucause==0,pmin(get(eexittime), get(uexittime)),get(eexittime)),
+                                           get(uexittime)),
+                          pmax(get(eexittime), get(uexittime)))]
+  # actual ones:
+  # out[, pexittime:=pmin(get(eexittime), get(uexittime))]
+  # out[, pcause:=ifelse(pexittime==get(eexittime),ecause,ucause)]
+
+    #out[pexittime==0, pexittime:=pexittime+runif(1,0,0.002)] 
   if (is.null(cens.formula)) {
     if (is.null(strata)) {
       if (!is.null(eentrytime)) {
