@@ -160,7 +160,9 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                                       cens.code = cens.code, cens.formula = cens.formula, strata = strata)
         
         Rt <- (i2out[,eexit ] <x) * (i2out[, ecause] == 1)-(i2out[,uexit ] <x) * (i2out[, ucause] == 1)
-        i2out[, ci:=ifelse(ecause!=0 & ucause!=0,Inf,min(eexit[ecause==0],uexit[ucause==0])),by=subj]
+        i2out[, ci:=ifelse(ecause!=0 & ucause!=0,Inf,ifelse(ecause==0, 
+                                                            ifelse(ucause==0,min(eexit,uexit),eexit),
+                                                            uexit)),by=subj]
         nocens <- (i2out[, ci] >= x) 
         return(i2out)
         },.id = NULL)
@@ -173,7 +175,9 @@ compcomp<-function(formula,data,cluster,idControl, strata=NULL,
                                     ecause = "ecause", ucause="ucause",
                                     cens.code = cens.code, cens.formula = cens.formula, strata = strata)
       Rt <- (i2out[,eexit ] <x) * (i2out[, ecause] == 1)-(i2out[,uexit ] <x) * (i2out[, ucause] == 1)
-      i2out[, ci:=ifelse(ecause!=0 & ucause!=0,Inf,min(eexit[ecause==0],uexit[ucause==0])),by=subj]
+      i2out[, ci:=ifelse(ecause!=0 & ucause!=0,Inf,ifelse(ecause==0, 
+                                                          ifelse(ucause==0,min(eexit,uexit),eexit),
+                                                          uexit)),by=subj]
       nocens <- (i2out[, ci] >= x) 
       i2out<-cbind(i2out, Rt, h=x, nocens)
       return(i2out)
