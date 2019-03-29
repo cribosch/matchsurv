@@ -151,7 +151,8 @@ Fexpo<-function(Funexpo,
   if (mean.link=="id") FeZ<-cbind(FeZ[,1],FeZ[,2]+FeZ[,3])
   else FeZ<-cbind(FeZ[,1],FeZ[,2]*exp(FeZ[,3]))
   if( FeZ[1,2]!=0) FeZ[1,2]<-0
-  F1t<-cbind(time=F1times,Fe=F1entryaL[,2]+timereg::Cpred(FeZ,F1times,strict=FALSE)[,2])
+  #F1t<-cbind(time=F1times,Fe=F1entryaL[,2]+timereg::Cpred(FeZ,F1times,strict=FALSE)[,2])
+  F1t<- cbind(time = F1times, Fe = F1entryaL[, 2] + Hmisc::approxExtrap(FeZ[,1],FeZ[,2],xout=F1times)$y)
   F1t<-F1t[F1t[,1]<=maxd,]
   if (any(F1t[,2]>1)) stop("gamma too big") #check3
   #browser()
