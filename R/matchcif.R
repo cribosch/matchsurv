@@ -237,7 +237,7 @@ prep.match.comp.risk<-function (data, times = NULL,
   prec <- .Machine$double.eps * prec.factor
   
   trunc.model <- cens.model <- NULL
-  browser()
+  #browser()
   out[, pcause:=ifelse(ecause!=0 & ucause!=0,1,0)]
   out[, pexittime:=ifelse(pcause==0,ifelse(ecause==0,
                                            ifelse(ucause==0,pmin(get(eexittime), get(uexittime)),get(eexittime)),
