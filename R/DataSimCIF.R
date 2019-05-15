@@ -13,6 +13,8 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("exit","i","j","agee"))
 ##' @param gammax coefficients for the excess risk model. Max 2 values to be specified (the first covariate is by default binomial, the second is log normal), Default values: \eqn{\gamma_1=0.1, \; \gamma_2=-0.2}. Note: some value might not work.
 ##' @param mean.link link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".
 ##' @param bias to simulate data with excess risk factor correlated with age
+##' @param cens TRUE when simulating data with uniform censoring time (it's the same for exposed and unexposed in the same cluster to mimic the registry structure) 
+##' @param age.expo NULL if age at entry randomly generated from uniform(0,20). If fix age, specify single number (it can be 0, no delay entry)
 ##' @param print.cifs if information about the given cifs is needed
 ##' @importFrom utils tail
 ##' @importFrom stats model.matrix as.formula

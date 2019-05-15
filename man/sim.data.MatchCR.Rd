@@ -5,7 +5,8 @@
 \title{Function to simulate matchced survival data in competing risk setting based on cumulative incidence functions}
 \usage{
 sim.data.MatchCR(nca, ncont = 5, cifs = NULL, gammax = c(0.1, -0.2),
-  mean.link = "log", bias = FALSE, print.cifs = FALSE)
+  mean.link = "log", bias = FALSE, cens = FALSE, age.expo = NULL,
+  print.cifs = FALSE)
 }
 \arguments{
 \item{nca}{number of exposed individuals}
@@ -19,6 +20,10 @@ sim.data.MatchCR(nca, ncont = 5, cifs = NULL, gammax = c(0.1, -0.2),
 \item{mean.link}{link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".}
 
 \item{bias}{to simulate data with excess risk factor correlated with age}
+
+\item{cens}{TRUE when simulating data with uniform censoring time (it's the same for exposed and unexposed in the same cluster to mimic the registry structure)}
+
+\item{age.expo}{NULL if age at entry randomly generated from uniform(0,20). If fix age, specify single number (it can be 0, no delay entry)}
 
 \item{print.cifs}{if information about the given cifs is needed}
 }
