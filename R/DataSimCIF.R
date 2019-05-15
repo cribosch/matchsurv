@@ -27,7 +27,8 @@ sim.data.MatchCR<-function(nca,
                            mean.link="log", 
                            bias=FALSE,
                            cens=FALSE,
-                           age.expo=NULL #age at entry for exposed if null, uniform (0,20). specify value otherwise. it can be 0
+                           age.expo=NULL, #age at entry for exposed if null, uniform (0,20). specify value otherwise. it can be 0
+                           print.cifs=FALSE
 ){
   #browser()
   if (is.null(cifs)) {
@@ -147,7 +148,9 @@ sim.data.MatchCR<-function(nca,
     if (length(gammax)>1) data.table::setcolorder(dd, c("i", "j", "expo","X1","X2","agee","entry","exit","time","cause"))
     else data.table::setcolorder(dd, c("i", "j", "expo","X1","agee","entry","exit","time","cause"))
   } else data.table::setcolorder(dd, c("i", "j", "expo","agee","entry","exit","time","cause"))
-  return(dd)
+  
+  if (!print.cifs) return(dd)
+  else return(list(data=dd, cifs=cifs))
 }
 ####}}} simMatchCR
 
