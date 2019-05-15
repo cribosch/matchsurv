@@ -26,19 +26,33 @@ sim.data.MatchCR<-function(nca,
                            gammax=c(0.1,-0.2), #by default simulate two covariates, z can be 0,1,2. 
                            mean.link="log", 
                            bias=FALSE,
-                           print.cifs=FALSE
-                           ){
+                           cens=FALSE,
+                           age.expo=NULL #age at entry for exposed if null, uniform (0,20). specify value otherwise. it can be 0
+){
   #browser()
   if (is.null(cifs)) {
-    ecif1<-cbind(time=c(0,1,2,seq(5,30,5)), cuminc=c(0, 0.117, 0.117, 0.138, 0.156, 0.157, 0.150, 0.148, 0.141))
-    ecif2<-cbind(time=c(0,1,2,seq(5,30,5)), cuminc=c(0,0.01, 0.02, 0.03, 0.03 ,0.04, 0.04, 0.04, 0.04))
-    ucif1<-cbind(time=c(5:9,seq(10,55,5)), cuminc=c(0,0.055,0.095,0.127,0.166,0.196,0.333,0.479,0.585,0.664,0.724,0.774,0.824,0.861,0.897))
-    ucif2<-cbind(time=c(5:9,seq(10,55,5)), cuminc=c(0,0,0,0,0,0,0.002, 0.003,0.004,0.005,0.006,0.006,0.008,0.009,0.010))
+    ecif1<-cbind(c(0,0.2, 0.5, 1:30),
+                 c(0,0.074,0.080, 0.117, 0.117, 0.124, 0.136,
+                   0.138, 0.135, 0.144, 0.148, 0.150, 0.156,
+                   0.171, 0.173, 0.161, 0.161, 0.157, 0.157, 0.157,
+                   0.157, 0.157, 0.150, 0.150, 0.150, 0.150,
+                   0.150, 0.148, 0.148, 0.148, 0.148, 0.148, 0.148))
+    ecif2<-cbind(c(0,0.2,0.5,1:30), c(rep(0,2),rep(0.01,2), 0.02, rep(0.03,11),rep(0.04,17)))
+    ucif1<-cbind(0:50,c(0,0.055,0.095,0.127,0.166,0.196,0.230,
+                        0.259,0.279,0.309,0.333,0.360,0.387,0.417,
+                        0.444,0.479,0.507,0.529,0.545,0.565,0.585,0.604,0.621,
+                        0.637,0.652,0.664,0.677,0.690,
+                        0.704,0.714,0.724,0.737,0.746,0.757,0.765,0.774,0.784,
+                        0.793,0.805,0.813,0.824,0.832,
+                        0.843,0.851,0.858,0.861,0.866,0.871,0.881,0.889,0.897))
+    ucif2<-cbind(0:50,c(rep(0,8),rep(0.001,2), rep(0.002, 3),
+                        rep(0.003,4), rep(0.004,8), rep(0.005,4), rep(0.006,9),
+                        rep(0.007,2), rep(0.008,2), rep(0.009,4), rep(0.010,5)))
     uF<-list(uF1=ucif1,uF2=ucif2)
     excess<-list(excess1=ecif1,excess2=ecif2)
   } else {
     if (!is.list(cifs)) warning("cifs is a list with 4 arguments in this order: background risk 1st cause,
-                              background risk 2nd cause, excess risk 1st cause, excess risk 2nd cause")
+                                background risk 2nd cause, excess risk 1st cause, excess risk 2nd cause")
     uF<-list(uF1=cifs[[1]], uF2=cifs[[2]])
     excess<-list(excess1=cifs[[3]], excess2=cifs[[4]])
   } 
@@ -54,7 +68,8 @@ sim.data.MatchCR<-function(nca,
                 Fe=excess,
                 model=mean.link,
                 gamma = gammax,
-                biass=FALSE)
+                biass=FALSE,
+                age.entry = age.expo)
     #browser()
     entry<-F1$entry
     if(!is.null(gammax)) {
@@ -70,7 +85,14 @@ sim.data.MatchCR<-function(nca,
       tail(x[,2],1)
     })[,2])
     if (ptot<=1) {
-      expotc<-timecause(F1.cuminc[[1]],F1.cuminc[[2]],n=1,entry=NULL,ptot=ptot)
+      expotc<-data.frame(timecause(F1.cuminc[[1]],F1.cuminc[[2]],n=1,entry=NULL,ptot=ptot))
+      if (cens){
+        censd<-runif(1)*30
+        expotc$cause <-ifelse(expotc$time<censd,expotc$cause,0)
+        expotc$time[expotc$cause==0]<-censd[expotc$cause==0]
+        expotc$censd<-censd
+      }
+      
       e<-cbind(expotc, j=1,expo=1, entry=entry)
       if(!is.null(gammax)) e<-cbind(e,X)
       if (bias)  e<-cbind(e,X)
@@ -80,16 +102,23 @@ sim.data.MatchCR<-function(nca,
   
   
   #browser()
+  expo$exit<-expo$time+expo$entry
   data.table::setDT(expo)
   if (expo[,.N]<nca) stop("ptot >1") #check2
   names(expo)[1]<-"i"
-  expo[,exit:=time+entry]
   
   #### unexposed -----------------
   unexpo <- plyr::ldply(1:ncont, function(y){
+    #browser()
     entry<-expo$entry
     if(!is.null(gammax) | bias) X<-expo[, namesX, with=FALSE]
-    unexpotc<-timecause(uF[[1]],uF[[2]],n=nca,entry=entry)
+    unexpotc<-data.frame(timecause(uF[[1]],uF[[2]],n=nca,entry=entry))
+    if(cens){
+      censa<-expo$censd+entry
+      unexpotc$cause <-ifelse(unexpotc$time<censa,unexpotc$cause,0)
+      unexpotc$time[unexpotc$cause==0]<-censa[unexpotc$cause==0]
+      unexpotc$censd<-expo$censd
+    }
     u<-data.frame(unexpotc,
                   entry=entry,
                   expo=0,
@@ -118,15 +147,10 @@ sim.data.MatchCR<-function(nca,
     if (length(gammax)>1) data.table::setcolorder(dd, c("i", "j", "expo","X1","X2","agee","entry","exit","time","cause"))
     else data.table::setcolorder(dd, c("i", "j", "expo","X1","agee","entry","exit","time","cause"))
   } else data.table::setcolorder(dd, c("i", "j", "expo","agee","entry","exit","time","cause"))
-  if (!print.cifs) return(dd)
-  else return (list(data=dd,
-                    cifs=list(excess,uF)))
+  return(dd)
 }
 ####}}} simMatchCR
 
-
-
-#### Fexpo ------------
 Fexpo<-function(Funexpo,
                 Fexcess,
                 coefs,
@@ -151,14 +175,13 @@ Fexpo<-function(Funexpo,
   if (mean.link=="id") FeZ<-cbind(FeZ[,1],FeZ[,2]+FeZ[,3])
   else FeZ<-cbind(FeZ[,1],FeZ[,2]*exp(FeZ[,3]))
   if( FeZ[1,2]!=0) FeZ[1,2]<-0
-  #F1t<-cbind(time=F1times,Fe=F1entryaL[,2]+timereg::Cpred(FeZ,F1times,strict=FALSE)[,2])
-  F1t<- cbind(time = F1times, Fe = F1entryaL[, 2] + Hmisc::approxExtrap(FeZ[,1],FeZ[,2],xout=F1times)$y)
+  F1t<-cbind(time=F1times,Fe=F1entryaL[,2]+timereg::Cpred(FeZ,F1times,strict=FALSE)[,2])
   F1t<-F1t[F1t[,1]<=maxd,]
   if (any(F1t[,2]>1)) stop("gamma too big") #check3
   #browser()
   if (any(diff(F1t[,2])<0)) stop (paste0("CIF in exposed is decreasing;entryt:",entryt)) #if any TRUE stop!!!!!! #check4
   return(F1t)
-  }
+}
 
 ##### simexpo ----------------------------------------
 ### give F1 on the age time scale
@@ -174,7 +197,9 @@ simexpo<-function(F0,
                   model="log",
                   gamma=NULL, 
                   #beta=FALSE, ### matching factor effect assume none
-                  biass=FALSE) {
+                  biass=FALSE,
+                  age.entry=NULL ## when age at entry is uniform (0,1). specify value if fix age.
+) {
   #browser()
   
   if (!is.list(F0)) {
@@ -189,7 +214,7 @@ simexpo<-function(F0,
   if(!is.null(gamma)) {
     X1<-rbinom(1,1,0.5)  # Z<-1 #
     if (length(gamma)>1) {
-      X2<-rlnorm(1,meanlog =0.3,sdlog =0.2)
+      X2<-rlnorm(1,mean=0.3,sd=0.2)
       twocovs<-TRUE
     }
   } else if (biass) X1<-rbinom(1,1,0.5)
@@ -201,7 +226,10 @@ simexpo<-function(F0,
   
   if (biass){ 
     age<-(5+runif(1)*2)*(X1==1)+(X1==0)*((20+runif(1)*3))
-  } else age<-runif(1,5,25) #age<-0 
+  } else if (is.null(age.entry)) {
+    age<-runif(1,0,20)
+  } else age<-age.entry
+  
   
   entry<-age
   
@@ -234,9 +262,9 @@ simexpo<-function(F0,
   
   if (twocauses) {
     F1<-plyr::mlply(cbind(x=F0, y=Fe, g=list(gamma,0)),
-              function(x,y,g) Fexpo(x,y,g, entryt = entry, 
-                                    truncprob = ptrunc, 
-                                    cov=Xv, mean.link = model))
+                    function(x,y,g) Fexpo(x,y,g, entryt = entry, 
+                                          truncprob = ptrunc, 
+                                          cov=Xv, mean.link = model))
   } else F1<-Fexpo(F0,Fe,gamma, entryt = entry, 
                    truncprob = ptrunc, cov=Xv, 
                    mean.link = model)
