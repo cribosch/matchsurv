@@ -60,6 +60,16 @@ sim.data.MatchCR<-function(nca,
     excess<-list(excess1=cifs[[3]], excess2=cifs[[4]])
   } 
   
+  if (bias) {
+    uF1.f<-function(t){
+      uF1<-(t<=15)*((t-5)*0.01)+(t>15 & t<=30)*(0.1+(t-15)*0.03)+(t>30)*(0.55+(t-30)*0.01)
+      return(cbind(time=t,cuminc=uF1))
+    }
+    uF1<-uF1.f(uF[[1]][,1])
+    uF[[1]]<-uF1
+  }
+  
+  
   if (!is.null(gammax)){
     if (length(gammax)>1) namesX<-c("X1","X2")
     else namesX<-"X1"
