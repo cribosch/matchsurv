@@ -212,7 +212,7 @@ compdata<-function(formula, data, clust, idControl,...){
   if (ncol(X)!=0){
     Xcases<-data.frame(X,clust,idControl, stringsAsFactors = FALSE)
     Xcases<-Xcases[cord,]
-    Xcases<-Xcases[Xcases$idControl==1 & !duplicated(clust),-ncol(Xcases)]
+    Xcases<-Xcases[Xcases$idControl==1 & !duplicated(Xcases$clust),-ncol(Xcases)]
   }
   
 
