@@ -25,7 +25,7 @@ Data structured for matchpropexc
 }
 \examples{
 dhaz<-sim.data.MatchH(nca=5000, ncont=5)
-setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
+setdhaz<-compdata(Surv(time, status)~z+cc, clust=id, idControl=j, data=dhaz)
 head(setdhaz, 10)
 }
 \author{

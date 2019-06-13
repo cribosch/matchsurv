@@ -21,7 +21,8 @@ Imports:
     timereg,
     mets,
     rlang,
-    Hmisc
+    Hmisc,
+    Matrix
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 

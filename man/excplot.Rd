@@ -45,8 +45,8 @@ Plotting the cumulative baselines excess hazard
 }
 \examples{
 dhaz<-sim.data.MatchH(nca=5000, ncont=5)
-setdhaz<-compdata(Surv(time, status)~x+z+cc, data=dhaz, idControl = j, clust=id)
-m <- matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x),data=setdhaz)
+setdhaz<-compdata(Surv(time, status)~z+cc, data=dhaz, idControl = j, clust=id)
+m <- matchpropexc(Surv(entry,exit,status)~strata(z)+cc,data=setdhaz)
 excplot(m, se=TRUE, col=c("green","blue"), main="with polygon CI") 
 excplot(m, se=TRUE, time=seq(0,30,1), main="at specific time-points") 
 excplot(m, se=TRUE, relsurv=TRUE, main="relative surv.") 

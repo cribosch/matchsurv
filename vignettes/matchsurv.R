@@ -23,12 +23,12 @@ haz.data<-sim.data.MatchH(5000,5)
 head(haz.data)
 
 ## ------------------------------------------------------------------------
-set.hazd<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=haz.data)
+set.hazd<-compdata(Surv(time, status)~z+cc, clust=id, idControl=j, data=haz.data)
 head(set.hazd)
 
 ## ------------------------------------------------------------------------
 
-exc.haz.mod<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=set.hazd)
+exc.haz.mod<-matchpropexc(Surv(entry,exit,status)~strata(z)+cc, data=set.hazd)
 
 
 ## ------------------------------------------------------------------------

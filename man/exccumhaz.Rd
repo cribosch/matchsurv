@@ -24,8 +24,8 @@ Cumulative baseline excess hazard estimate
 }
 \examples{
 dhaz<-sim.data.MatchH(nca=5000, ncont=5)
-setdhaz<-compdata(Surv(time, status)~x+z+cc, clust=id, idControl=j, data=dhaz)
-exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+factor(x), data=setdhaz)
+setdhaz<-compdata(Surv(time, status)~z+cc, clust=id, idControl=j, data=dhaz)
+exc.model<-matchpropexc(Surv(entry,exit,status)~strata(z)+cc, data=setdhaz)
 cumhaz <- exccumhaz(exc.model) #it's a list because of strata
 cumhaz <- exccumhaz(exc.model, time=seq(0,30,5)) 
 #you can chose at which time-points to show the estimates
