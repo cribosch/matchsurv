@@ -12,7 +12,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("V1",
                                                         "clust.num","weightedo",
                                                         "Rt","subj","h",
                                                         "pexittime", "pcause",
-                                                        "weights_","cw_","cw"))
+                                                        "weights_","cw_","cw","ci"))
 
 ### {{{ compcomp
 ##' Data structured for glm approach in competing risk setting
