@@ -5,7 +5,7 @@
 \title{Excess CIF prediction based on newdata and geepack::geese estimates.}
 \usage{
 ecif.pred(model = NULL, times, formula, dataset, strata.levels = NULL,
-  coefs = NULL, vcov = NULL)
+  coefs = NULL, vcov = NULL, link = "log")
 }
 \arguments{
 \item{model}{geese object. To be defined if coefs and vcov are null.}
@@ -21,6 +21,8 @@ ecif.pred(model = NULL, times, formula, dataset, strata.levels = NULL,
 \item{coefs}{coefficient estimates (\code{model$beta}). To be specified if model is NULL}
 
 \item{vcov}{coefficient variance and covariance matrix (\code{model$vbeta}). To be specified if model is NULL, together with coefs.}
+
+\item{link}{link from the gee model}
 }
 \value{
 dataset with predicted values; ready to be used with ggplot2

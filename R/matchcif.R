@@ -380,7 +380,7 @@ prep.match.comp.risk<-function (data, times = NULL,
 
 ##### to predict excess risk -------------
 ### risk prediction ---------------
-Ft <- function(p,times,formula,newdata){
+Ft <- function(p,times,formula,newdata, linkf="log"){
   #browser()
   lt<-length(times)
   mm<-model.matrix(as.formula(paste0("~",formula,collapse = "")), data=newdata)
@@ -388,7 +388,8 @@ Ft <- function(p,times,formula,newdata){
   zp <- mm %*% p
   #if((length(times)+ncol(xpred))!=length(p)) stop("The variables in the model and the variables for prediction are different")
   #xp <- sum(xpred *  p[-(1:lt)])
-  lam <- exp(zp)
+  if (linkf=="log") lam <- exp(zp)
+  if (linkf=="id") lam <- zp
   if(ncol(newdata)>1) rownames(lam)<-paste0(newdata[,1],";", newdata[,2])
   else rownames(lam)<-paste0(newdata[,1],";")
   return(lam)
@@ -404,6 +405,7 @@ Ft <- function(p,times,formula,newdata){
 ##' @param strata.levels if CIF predicted for different strata, define strata levels
 ##' @param coefs coefficient estimates (\code{model$beta}). To be specified if model is NULL
 ##' @param vcov coefficient variance and covariance matrix (\code{model$vbeta}). To be specified if model is NULL, together with coefs.
+##' @param link link from the gee model
 ##' @import tidyr
 ##' @importFrom dplyr mutate
 ##' @examples 
@@ -435,7 +437,7 @@ Ft <- function(p,times,formula,newdata){
 ##' @return dataset with predicted values; ready to be used with ggplot2
 ##' @export 
 ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
-                      coefs=NULL, vcov=NULL){
+                      coefs=NULL, vcov=NULL, link="log"){
   #browser()
   if( is.null(model) & is.null(coefs) & is.null(vcov)) stop("please define model or coefs+vcov")
   lt<-length(times)
@@ -446,7 +448,7 @@ ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
   
   estimate.output<-lava::estimate(model, function(p) Ft(p,times = times,
                                                         formula = formula
-                                                        ,newdata = dataset), 
+                                                        ,newdata = dataset, linkf=link), 
                                   coef=coefs, vcov = vcov
                                   #, labels = rownames(check)
   )
