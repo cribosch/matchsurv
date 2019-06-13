@@ -12,6 +12,8 @@ ecif.coef(model, times, link = "log", level = 0.95)
 \item{times}{vector of timepoints as the one used to estimate the GEE model}
 
 \item{link}{link used to estimate the model. Choose between c("log","logit","identity")}
+
+\item{level}{confindence interval level, default=0.95}
 }
 \value{
 table with coefficient estimates, sandwich standard error, function of coefficient for interpretation and p-value.

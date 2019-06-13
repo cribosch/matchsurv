@@ -15,14 +15,11 @@ Depends:
     tidyr
 Imports: 
     lava (>= 1.5),
-    Rcpp,
     plyr,
     dplyr,
     timereg,
     mets,
-    rlang,
-    Hmisc,
-    Matrix
+    rlang
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 Suggests: 

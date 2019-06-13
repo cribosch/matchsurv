@@ -482,6 +482,7 @@ ecif.pred<-function(model=NULL,times,formula,dataset,strata.levels=NULL,
 ##' @param model geese object. To be defined if coefs and vcov are null.
 ##' @param times vector of timepoints as the one used to estimate the GEE model
 ##' @param link link used to estimate the model. Choose between c("log","logit","identity")
+##' @param level confindence interval level, default=0.95
 ##' @importFrom rlang .data
 ##' @examples 
 ##' dcif<-sim.data.MatchCR(1000,5)

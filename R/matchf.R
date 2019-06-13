@@ -1,5 +1,7 @@
 ### global variables
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("surv"))  
+if(getRversion() >= "2.15.1")  utils::globalVariables(c("surv","lower.ci",
+                                                        "chaz","se.chaz","upper.ci",
+                                                        "low.relsurv.ci","up.relsurv.ci"))  
 
 
 # ### {{{ compdata
@@ -738,7 +740,7 @@ ehaz.plot<-function(object, time=NULL,relsurv=FALSE, level=0.95){
   if (!is.null(object$strata)) strata<-TRUE
   if (strata) {
     strata.names<-attributes(exc.list)$names
-    strata.length<-ldply(exc.list, function(x) nrow(x))[,2]
+    strata.length<-plyr::ldply(exc.list, function(x) nrow(x))[,2]
     exc<-data.table(do.call("rbind",exc.list),strata=rep(strata.names,times=strata.length))
   } else exc<-data.table(exc.list)
   exc[, lower.ci:=chaz-level*se.chaz]
