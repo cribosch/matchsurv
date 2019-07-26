@@ -10,10 +10,11 @@ License: GPL (>= 2)
 LinkingTo: Rcpp, RcppArmadillo
 Depends: 
     R (>= 3.3),
-    survival,
     data.table,
+    survival,
     tidyr
 Imports: 
+    Hmisc,
     lava (>= 1.5),
     plyr,
     dplyr,
