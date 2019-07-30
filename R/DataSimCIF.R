@@ -236,7 +236,7 @@ simexpo<-function(F0,
   if(!is.null(gamma)) {
     X1<-rbinom(1,1,0.5)  # Z<-1 #
     if (length(gamma)>1) {
-      X2<-rlnorm(1,meanlog=0.3,sd=0.05)
+      X2<-rlnorm(1,meanlog=0.3,sdlog=0.05)
       twocovs<-TRUE
     }
   } else if (biass) X1<-rbinom(1,1,0.5)
