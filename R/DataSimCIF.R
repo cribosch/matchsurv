@@ -101,12 +101,12 @@ sim.data.MatchCR<-function(nca,
     if (ptot<=1) {
       expotc<-data.frame(timecause(F1.cuminc[[1]],F1.cuminc[[2]],n=1,entry=NULL,ptot=ptot))
       if (cens){
-        censd<-rexp(1,0.025)
-        expotc$cause <-ifelse(expotc$time<censd,expotc$cause,0)
-        expotc$time[expotc$cause==0]<-censd[expotc$cause==0]
+        censd<-rexp(1,0.02)
+        time<-pmin(expotc$time,censd)
+        expotc$cause <-ifelse(expotc$time==time,expotc$cause,0)
+        expotc$time<-time
         expotc$censd<-censd
       }
-      
       e<-cbind(expotc, j=1,expo=1, entry=entry)
       if(!is.null(gammax)) e<-cbind(e,X)
       if (bias)  e<-cbind(e,X)
@@ -129,9 +129,14 @@ sim.data.MatchCR<-function(nca,
     unexpotc<-data.frame(timecause(uF[[1]],uF[[2]],n=nca,entry=entry))
     if(cens){
       censa<-expo$censd+entry
-      unexpotc$cause <-ifelse(unexpotc$time<censa,unexpotc$cause,0)
-      unexpotc$time[unexpotc$cause==0]<-censa[unexpotc$cause==0]
+      # unexpotc$cause <-ifelse(unexpotc$time<=censa,unexpotc$cause,0)
+      # unexpotc$time[unexpotc$cause==0]<-censa[unexpotc$cause==0]
+      # unexpotc$censd<-expo$censd
+      time<-pmin(unexpotc$time,censa)
+      unexpotc$cause <-ifelse(unexpotc$time==time,unexpotc$cause,0)
+      unexpotc$time<-time
       unexpotc$censd<-expo$censd
+      
     }
     u<-data.frame(unexpotc,
                   entry=entry,
@@ -231,7 +236,7 @@ simexpo<-function(F0,
   if(!is.null(gamma)) {
     X1<-rbinom(1,1,0.5)  # Z<-1 #
     if (length(gamma)>1) {
-      X2<-rnorm(1,mean=0,sd=0.1)
+      X2<-rlnorm(1,meanlog=0.3,sd=0.05)
       twocovs<-TRUE
     }
   } else if (biass) X1<-rbinom(1,1,0.5)
@@ -315,6 +320,7 @@ timecause<-function(Fc1,Fc2,n,entry=NULL,ptot=NULL){
   rb <- rbinom(n,1,p1/ptot)
   cause <- ifelse(rb==1,1,2)
   time <- ifelse(cause==1,Fi1$time,Fi2$time)
+  if (any(time>50)) print(cbind(u,cause,time)[time>50])
   cause <- rt*cause
   time[cause==0] <- min(tail(Fc1[,1],1), tail(Fc2[,1],1))
   return(cbind(time=time,cause=cause))
