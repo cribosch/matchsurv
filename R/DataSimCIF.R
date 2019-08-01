@@ -14,6 +14,7 @@ if(getRversion() >= "2.15.1")  utils::globalVariables(c("exit","i","j","agee"))
 ##' @param mean.link link function for the gee model. The data are simulating accordingly to the link that will be used to estimate the excess cif model. Two values supported "id" or "log".
 ##' @param bias to simulate data with excess risk factor correlated with age
 ##' @param cens TRUE when simulating data with uniform censoring time (it's the same for exposed and unexposed in the same cluster to mimic the registry structure) 
+##' @param cens.dist TRUE when censoring time depends on X1. FALSE if no censoring or independent censoring times
 ##' @param age.expo NULL if age at entry randomly generated from uniform(0,20). If fix age, specify single number (it can be 0, no delay entry)
 ##' @param print.cifs if information about the given cifs is needed
 ##' @importFrom utils tail
@@ -29,6 +30,7 @@ sim.data.MatchCR<-function(nca,
                            mean.link="log", 
                            bias=FALSE,
                            cens=FALSE,
+                           cens.dist=FALSE,
                            age.expo=NULL, #age at entry for exposed if null, uniform (0,20). specify value otherwise. it can be 0
                            print.cifs=FALSE
 ){
@@ -101,7 +103,12 @@ sim.data.MatchCR<-function(nca,
     if (ptot<=1) {
       expotc<-data.frame(timecause(F1.cuminc[[1]],F1.cuminc[[2]],n=1,entry=NULL,ptot=ptot))
       if (cens){
+        if (!cens.dist){
         censd<-rexp(1,0.02)
+        } else {
+          if (!("X1" %in% namesX)) stop("X1 is needed")
+          censd<-rexp(1,0.01)*(X[,1]==1)+rexp(1,0.1)*(X[,1]!=1)
+        }
         time<-pmin(expotc$time,censd)
         expotc$cause <-ifelse(expotc$time==time,expotc$cause,0)
         expotc$time<-time
