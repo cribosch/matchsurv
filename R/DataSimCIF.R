@@ -84,7 +84,7 @@ sim.data.MatchCR<-function(nca,
                 Fe=excess,
                 model=mean.link,
                 gamma = gammax,
-                biass=FALSE,
+                biass=bias,
                 age.entry = age.expo)
     #browser()
     entry<-F1$entry
