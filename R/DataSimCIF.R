@@ -76,7 +76,7 @@ sim.data.MatchCR<-function(nca,
   if (!is.null(gammax)){
     if (length(gammax)>1) namesX<-c("X1","X2")
     else namesX<-"X1"
-  }
+  } else if (bias) namesX<-"X1"
   
   #### exposed ------------
   expo<-plyr::rdply(nca, {
