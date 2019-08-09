@@ -390,8 +390,8 @@ Ft <- function(p,times,formula,newdata, linkf="log"){
   #xp <- sum(xpred *  p[-(1:lt)])
   if (linkf=="log") lam <- exp(zp)
   if (linkf=="id") lam <- zp
-  # if(ncol(newdata)>1) rownames(lam)<-paste0(newdata[,1],";", newdata[,2])
-  # else rownames(lam)<-paste0(newdata[,1],";")
+  if(ncol(newdata)>1) rownames(lam)<-paste0(newdata[,1],";", newdata[,2])
+  else rownames(lam)<-paste0(newdata[,1],";")
   return(lam)
 }
 
