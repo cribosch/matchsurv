@@ -256,7 +256,7 @@ simexpo<-function(F0,
   # }
   
   if (biass){ 
-    age<-(5+runif(1)*2)*(X1==1)+(X1==0)*((20+runif(1)*3))
+    age<-(runif(1)*2)*(X1==1)+(X1==0)*((15+runif(1)*3))
   } else if (is.null(age.entry)) {
     age<-runif(1,0,20)
   } else age<-age.entry
