@@ -56,6 +56,7 @@ sim.data.MatchCR<-function(nca,
                         rep(0.007,2), rep(0.008,2), rep(0.009,4), rep(0.010,5)))
     uF<-list(uF1=ucif1,uF2=ucif2)
     excess<-list(excess1=ecif1,excess2=ecif2)
+    cifs<-list(uF[[1]], uF[[2]], excess[[1]], excess[[2]])
   } else {
     if (!is.list(cifs)) warning("cifs is a list with 4 arguments in this order: background risk 1st cause,
                                 background risk 2nd cause, excess risk 1st cause, excess risk 2nd cause")
@@ -65,7 +66,7 @@ sim.data.MatchCR<-function(nca,
   
   if (bias) {
     uF1.f<-function(t){
-      uF1<-(t<=15)*((t-5)*0.01)+(t>15 & t<=30)*(0.1+(t-15)*0.03)+(t>30)*(0.55+(t-30)*0.01)
+      uF1<-(t<=10)*(t*0.01)+(t>10 & t<=25)*(0.1+(t-10)*0.03)+(t>25)*(0.55+(t-25)*0.01)
       return(cbind(time=t,cuminc=uF1))
     }
     uF1<-uF1.f(uF[[1]][,1])
@@ -114,9 +115,10 @@ sim.data.MatchCR<-function(nca,
         expotc$time<-time
         expotc$censd<-censd
       }
-      e<-cbind(expotc, j=1,expo=1, entry=entry)
+      
+      e<-data.frame(expotc, j=1,expo=1, entry=entry)
       if(!is.null(gammax)) e<-cbind(e,X)
-      if (bias)  e<-cbind(e,X)
+      else if (bias)  e<-cbind(e,X)
       return(e)
     }
   })
